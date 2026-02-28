@@ -17,5 +17,9 @@ urlpatterns = [
     path('new_post/',views.new_post, name = 'new_post'),
     #编辑帖子
     path('edit_post/<int:post_id>/', views.edit_post, name = 'edit_post'),
-
+    #功能性接口
+    path('toggle_like/', views.toggle_like, name='toggle_like'),
+    path('toggle_collection/', views.toggle_collection, name='toggle_collection'),
+    path('posts/<int:post_id>/comment/', views.post_comment, name='post_comment'),
+    path('collections/', views.collect_list, name='collect_list'),
 ]

@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
 from .models import Title, Context, Like, Collection, Comment
-from .forms import TitleForm,ContextForm
+from .forms import TitleForm,ContextForm,CommentForm
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
 # 新增：导入登录装饰器和登录验证
@@ -20,10 +21,36 @@ def posts(request):
     return render(request, 'blog_context/posts.html', context)
 
 def post(request, post_id):
-    """帖子内容全部展示"""
-    post = Title.objects.get(id=post_id)
+    """帖子内容全部展示，包含评论和点赞交互"""
+    post = get_object_or_404(Title, id=post_id)
     entries = post.context_set.all()
-    context = {'post': post, 'entries': entries}
+    
+    # 评论逻辑：获取所有顶级评论（无父评论的）
+    comments = Comment.objects.filter(post=post, parent_comment=None).order_by('-date_added')
+    
+    # 交互统计
+    like_count = Like.get_like_count('article', post.id)
+    collection_count = Collection.get_collection_count(post)
+    
+    # 用户状态
+    is_liked = False
+    is_collected = False
+    if request.user.is_authenticated:
+        is_liked = Like.get_user_like_status(request.user, 'article', post.id)
+        is_collected = Collection.get_user_collection_status(request.user, post)
+    
+    comment_form = CommentForm()
+
+    context = {
+        'post': post, 
+        'entries': entries,
+        'comments': comments,
+        'comment_form': comment_form,
+        'like_count': like_count,
+        'collection_count': collection_count,
+        'is_liked': is_liked,
+        'is_collected': is_collected,
+    }
     return render(request, 'blog_context/post_content.html', context)
 
 @login_required
@@ -105,5 +132,42 @@ def toggle_like(request):
     return JsonResponse({'status': 'error', 'message': '无效请求'})
 
 
+
+@login_required
+def toggle_collection(request):
+    if request.method == 'POST':
+        post_id = request.POST.get('post_id')
+        post = get_object_or_404(Title, id=post_id)
+        action, count = Collection.toggle_collection(request.user, post)
+        return JsonResponse({
+            'status': 'success',
+            'action': action,
+            'collection_count': count,
+        })
+    return JsonResponse({'status': 'error', 'message': '无效请求'})
+
+
+@login_required
+def post_comment(request, post_id):
+    post = get_object_or_404(Title, id=post_id)
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.user = request.user
+
+            parent_comment_id = request.POST.get('parent_comment_id')
+            if parent_comment_id:
+                comment.parent_comment = Comment.objects.get(id=parent_comment_id)
+            comment.save()
+            return redirect('blog_context:post', post_id=post_id)
+    return redirect('blog_context:post', post_id=post_id)
+
+@login_required
+def collect_list(request):
+    """收藏列表"""
+    collections = Collection.objects.filter(user=request.user)
+    return render(request, 'blog_context/collect_list.html', {'collections': collections})
 
 

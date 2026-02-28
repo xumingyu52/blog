@@ -129,6 +129,16 @@ class Comment(models.Model):
     text = models.TextField()
     date_added = models.DateTimeField(auto_now_add=True)
 
+    #回复
+    parent_comment = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        related_name='replies',
+        null=True,
+        blank=True,
+    )
+
+    
     class Meta:
         verbose_name = '评论'
         verbose_name_plural = '评论'

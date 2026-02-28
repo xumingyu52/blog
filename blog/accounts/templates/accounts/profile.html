@@ -144,7 +144,16 @@
 </section>
 
 <section class="container" style="max-width: 900px;">
-    <h2 class="posts-section-title">发布的共享 ({{ user_posts|length }})</h2>
+    <div
+        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; border-bottom: 2px solid #f9f9fb; padding-bottom: 15px;">
+        <h2 class="posts-section-title" style="margin-bottom: 0;">发布的共享 ({{ user_posts|length }})</h2>
+        {% if user == profile_user %}
+        <a href="{% url 'blog_context:collect_list' %}" class="btn-edit"
+            style="background: #f5f5f7; color: #000; border: 1px solid #eee;">
+            <span style="margin-right: 5px;">📂</span> 我的收藏
+        </a>
+        {% endif %}
+    </div>
 
     <div class="posts-grid">
         {% for post in user_posts %}

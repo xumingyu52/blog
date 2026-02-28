@@ -138,7 +138,15 @@ class Comment(models.Model):
         blank=True,
     )
 
-    
+    # 回复给谁
+    reply_to = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        related_name='received_replies',
+        null=True,
+        blank=True,
+    )
+
     class Meta:
         verbose_name = '评论'
         verbose_name_plural = '评论'

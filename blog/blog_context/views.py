@@ -159,7 +159,13 @@ def post_comment(request, post_id):
 
             parent_comment_id = request.POST.get('parent_comment_id')
             if parent_comment_id:
-                comment.parent_comment = Comment.objects.get(id=parent_comment_id)
+                parent = Comment.objects.get(id=parent_comment_id)
+                comment.parent_comment = parent
+                
+                # 获取回复给谁的名字
+                reply_to_user_id = request.POST.get('reply_to_user_id')
+                if reply_to_user_id:
+                    comment.reply_to_id = reply_to_user_id
             comment.save()
             return redirect('blog_context:post', post_id=post_id)
     return redirect('blog_context:post', post_id=post_id)

@@ -1,7 +1,9 @@
 {% extends "blog_context/base.html" %}
 {% load static %}
 
-{% block title %}{{ post.text }} - 获取，分享一切{% endblock %}
+{% block title %}
+{{ post.text }}-分享
+{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -14,7 +16,6 @@
         font-size: 0.95rem;
         margin-bottom: 24px;
         transition: var(--transition-smooth);
-        font-weight: 500;
     }
 
     .back-link:hover {
@@ -22,7 +23,6 @@
         transform: translateX(-4px);
     }
 
-    /* Connected Post & Comment Layout */
     .post-container-group {
         box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.05);
         border-radius: 24px;
@@ -34,13 +34,12 @@
 
     .post-article {
         padding: 40px;
-        border-bottom: 1px solid #f5f5f7;
     }
 
     .post-header {
-        margin-bottom: 40px;
-        padding-bottom: 32px;
-        border-bottom: 1px solid #f9f9f9;
+        margin-bottom: 12px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #f2f2f2;
     }
 
     .post-title {
@@ -48,7 +47,7 @@
         font-weight: 850;
         letter-spacing: -0.03em;
         line-height: 1.25;
-        margin-bottom: 24px;
+        margin-bottom: 16px;
         color: #000;
     }
 
@@ -57,7 +56,6 @@
         align-items: center;
         justify-content: space-between;
         gap: 20px;
-        flex-wrap: wrap;
     }
 
     .post-author-box {
@@ -84,27 +82,42 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
-    .author-details {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .author-name-bold {
-        font-weight: 750;
-        font-size: 0.95rem;
+    .btn-edit {
+        display: inline-block;
+        padding: 10px 24px;
+        background: #f5f5f7;
         color: #000;
+        border-radius: 100px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.85rem;
+        transition: var(--transition-smooth);
+        border: 1px solid #eee;
     }
 
-    .post-date-small {
-        font-size: 0.8rem;
-        color: var(--text-muted);
+    .btn-edit:hover {
+        background: #000;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
 
-    /* Interaction Bar */
+    .post-body {
+        margin-top: 15px;
+    }
+
+    .entry-div {
+        margin-bottom: 24px;
+        white-space: pre-wrap;
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #333;
+    }
+
     .interaction-bar {
         display: flex;
         gap: 16px;
-        margin-top: 40px;
+        margin-top: 32px;
     }
 
     .interact-btn {
@@ -122,11 +135,6 @@
         transition: var(--transition-smooth);
     }
 
-    .interact-btn:hover {
-        background: #f9f9fb;
-        transform: translateY(-2px);
-    }
-
     .interact-btn.active.like-btn {
         background: #ff4757;
         color: #fff;
@@ -142,17 +150,10 @@
     .btn-icon {
         width: 18px;
         height: 18px;
-        transition: var(--transition-smooth);
     }
 
-    .interact-btn.active .btn-icon {
-        filter: brightness(0) invert(1);
-    }
-
-    /* Comment Section Integrated */
     .comment-section {
         background: #fafafc;
-        /* Subtle hint of different area */
         padding: 40px;
     }
 
@@ -166,7 +167,7 @@
     }
 
     .comment-form-container {
-        margin-bottom: 40px;
+        margin-bottom: 32px;
     }
 
     .comment-form textarea {
@@ -177,16 +178,9 @@
         min-height: 80px;
         font-family: inherit;
         font-size: 0.95rem;
-        margin-bottom: 12px;
         resize: vertical;
         background: white;
         transition: border-color 0.3s ease;
-    }
-
-    .comment-form textarea:focus {
-        outline: none;
-        border-color: #000;
-        box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.02);
     }
 
     .btn-comment {
@@ -200,18 +194,21 @@
         transition: var(--transition-smooth);
     }
 
+    .comment-list {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
     .comment-item {
         display: flex;
         gap: 14px;
-        margin-bottom: 24px;
     }
 
     .comment-avatar {
         width: 38px;
         height: 38px;
         border-radius: 50%;
-        flex-shrink: 0;
-        background-color: #ddd;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -229,12 +226,11 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 4px;
+        font-size: 0.9rem;
     }
 
     .comment-user {
         font-weight: 750;
-        font-size: 0.9rem;
         color: #000;
         text-decoration: none;
     }
@@ -248,23 +244,18 @@
         font-size: 0.95rem;
         line-height: 1.6;
         color: #333;
-        margin-bottom: 6px;
+        margin: 4px 0;
     }
 
     .action-link {
         font-size: 0.8rem;
         color: #888;
-        text-decoration: none;
         cursor: pointer;
         font-weight: 600;
     }
 
-    .action-link:hover {
-        color: #000;
-    }
-
     .replies-container {
-        margin-top: 16px;
+        margin-top: 12px;
         padding-left: 16px;
         border-left: 2px solid #eee;
     }
@@ -272,6 +263,10 @@
     .reply-form {
         margin-top: 12px;
         display: none;
+        background: white;
+        padding: 16px;
+        border-radius: 16px;
+        border: 1px solid #efefef;
     }
 </style>
 {% endblock %}
@@ -279,37 +274,40 @@
 {% block content %}
 <div style="margin-top: 20px;">
     <a href="{% url 'blog_context:posts' %}" class="back-link">
-        <span style="font-size: 1.2rem; line-height: 1;">&larr;</span> 返回帖子列表
+        <span>&larr;</span>
+        返回
     </a>
 </div>
 
 <div class="post-container-group">
-    <!-- Post Article Part -->
     <article class="post-article">
         <header class="post-header">
-            <h1 class="post-title">{{ post.text }}</h1>
-
+            <h1 class="post-title">
+                {{ post.text }}
+            </h1>
             <div class="post-info-row">
                 <a href="{% url 'accounts:user_profile' post.author.id %}" class="post-author-box">
                     <div class="author-avatar-large"
                         style="{% if not post.author.avatar or post.author.avatar.name == 'avatars/default.png' %}background-color: {{ post.author.get_avatar_color }};{% endif %}">
                         {% if post.author.avatar and post.author.avatar.name != 'avatars/default.png' %}
-                        <img src="{{ post.author.avatar.url }}" alt=""
-                            style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                        <img src="{{ post.author.avatar.url }}"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         {% else %}
                         {{ post.author.get_initial }}
                         {% endif %}
                     </div>
                     <div class="author-details">
-                        <span class="author-name-bold">{{ post.author.username }}</span>
-                        <span class="post-date-small">{{ post.date_added|date:"Y年m月d日 H:i" }}</span>
+                        <span class="author-name-bold">
+                            {{ post.author.username }}
+                        </span>
+                        <span class="post-date-small">
+                            {{ post.date_added|date:"Y年m月d日 H:i" }}
+                        </span>
                     </div>
                 </a>
-
                 {% if user == post.author %}
-                <a href="{% url 'blog_context:edit_post' post.id %}" class="btn-edit"
-                    style="padding: 8px 20px; font-size: 0.85rem; background: #f5f5f7; color: #000; border: 1px solid #eee;">
-                    编辑帖子
+                <a href="{% url 'blog_context:edit_post' post.id %}" class="btn-edit">
+                    编辑
                 </a>
                 {% endif %}
             </div>
@@ -317,46 +315,48 @@
 
         <div class="post-body">
             {% for entry in entries %}
-            <div style="margin-bottom: 24px; white-space: pre-wrap; font-size: 1.1rem; line-height: 1.8;">{{ entry.text
-                }}</div>
+            <div class="entry-div">{{ entry.text }}</div>
             {% empty %}
-            <p style="color: var(--text-muted); font-style: italic;">暂时还没有详细描述。</p>
+            <p style="color: #999;">无正文内容。</p>
             {% endfor %}
         </div>
 
-        <!-- Interaction Bar -->
         <div class="interaction-bar">
             <button class="interact-btn like-btn {% if is_liked %}active{% endif %}" id="likeBtn">
                 <img src="{% static 'images/icon/赞_thumbs-up.svg' %}" class="btn-icon" alt="">
-                <span id="likeCount">{{ like_count }}</span> 赞
+                <span id="likeCount">
+                    {{ like_count }}
+                </span>
+                赞
             </button>
             <button class="interact-btn collect-btn {% if is_collected %}active{% endif %}" id="collectBtn">
                 <img src="{% static 'images/icon/喜欢_like.svg' %}" class="btn-icon" alt="">
-                <span id="collectCount">{{ collection_count }}</span> 喜欢
+                <span id="collectCount">
+                    {{ collection_count }}
+                </span>
+                喜欢
             </button>
         </div>
     </article>
 
-    <!-- Integrated Comment Section -->
     <section class="comment-section">
         <h2 class="section-title">
-            <span>💬</span> 评论交流 ({{ comments|length }})
+            <span>💬</span>
+            评论交流 ({{ post.comments.count }})
         </h2>
-
         {% if user.is_authenticated %}
         <div class="comment-form-container">
             <form action="{% url 'blog_context:post_comment' post.id %}" method="post" class="comment-form">
                 {% csrf_token %}
-                <textarea name="text" id="mainCommentArea" placeholder="分享你的看法..." required></textarea>
+                <textarea name="text" placeholder="说说你的看法..." required></textarea>
                 <div style="text-align: right;">
-                    <button type="submit" class="btn-comment">发表评论</button>
+                    <button type="submit" class="btn-comment">发表</button>
                 </div>
             </form>
         </div>
         {% else %}
-        <div
-            style="text-align: center; padding: 20px; color: #888; background: #f0f0f2; border-radius: 12px; margin-bottom: 30px;">
-            请 <a href="{% url 'accounts:login' %}" style="color: #000; font-weight: 700;">登录</a> 后参与讨论
+        <div style="text-align: center; padding: 20px; color: #888;">
+            请登录后参与评论
         </div>
         {% endif %}
 
@@ -374,19 +374,25 @@
                 </div>
                 <div class="comment-content">
                     <div class="comment-header">
-                        <a href="{% url 'accounts:user_profile' comment.user.id %}" class="comment-user">{{
-                            comment.user.username }}</a>
-                        <span class="comment-time">{{ comment.date_added|date:"m-d H:i" }}</span>
+                        <a href="{% url 'accounts:user_profile' comment.user.id %}" class="comment-user">
+                            {{ comment.user.username }}
+                        </a>
+                        <span class="comment-time">
+                            {{ comment.date_added|date:"m-d H:i" }}
+                        </span>
                     </div>
-                    <div class="comment-text">{{ comment.text }}</div>
+                    <div class="comment-text">
+                        {{ comment.text }}
+                    </div>
                     <div class="comment-actions">
                         {% if user.is_authenticated %}
                         <a class="action-link"
-                            onclick="openReply('{{ comment.id }}', '{{ comment.user.username }}')">回复</a>
+                            onclick="openReply('{{ comment.id }}', '{{ comment.user.id }}', '{{ comment.user.username }}')">
+                            回复
+                        </a>
                         {% endif %}
                     </div>
 
-                    <!-- Nested Replies -->
                     {% if comment.replies.all %}
                     <div class="replies-container">
                         {% for reply in comment.replies.all %}
@@ -402,15 +408,30 @@
                             </div>
                             <div class="comment-content">
                                 <div class="comment-header">
-                                    <a href="{% url 'accounts:user_profile' reply.user.id %}" class="comment-user">{{
-                                        reply.user.username }}</a>
-                                    <span class="comment-time">{{ reply.date_added|date:"m-d H:i" }}</span>
+                                    <a href="{% url 'accounts:user_profile' reply.user.id %}" class="comment-user">
+                                        {{ reply.user.username }}
+                                    </a>
+                                    {% if reply.reply_to %}
+                                    <span style="color: #999; font-size: 0.8rem; margin: 0 4px;">
+                                        回复
+                                    </span>
+                                    <span class="comment-user" style="font-weight: 600; font-size: 0.85rem;">
+                                        @{{ reply.reply_to.username }}
+                                    </span>
+                                    {% endif %}
+                                    <span class="comment-time">
+                                        {{ reply.date_added|date:"m-d H:i" }}
+                                    </span>
                                 </div>
-                                <div class="comment-text">{{ reply.text }}</div>
+                                <div class="comment-text">
+                                    {{ reply.text }}
+                                </div>
                                 <div class="comment-actions">
                                     {% if user.is_authenticated %}
                                     <a class="action-link"
-                                        onclick="openReply('{{ comment.id }}', '{{ reply.user.username }}')">回复</a>
+                                        onclick="openReply('{{ comment.id }}', '{{ reply.user.id }}', '{{ reply.user.username }}')">
+                                        回复
+                                    </a>
                                     {% endif %}
                                 </div>
                             </div>
@@ -419,23 +440,24 @@
                     </div>
                     {% endif %}
 
-                    <!-- Dynamic Reply Form (Hidden inside comment content) -->
                     <div class="reply-form" id="reply-form-{{ comment.id }}">
                         <form action="{% url 'blog_context:post_comment' post.id %}" method="post" class="comment-form">
                             {% csrf_token %}
                             <input type="hidden" name="parent_comment_id" value="{{ comment.id }}">
-                            <textarea name="text" placeholder="回复..." required></textarea>
-                            <div style="text-align: right;">
-                                <button type="submit" class="btn-comment"
-                                    style="padding: 6px 16px; font-size: 0.8rem;">发送回复</button>
+                            <input type="hidden" name="reply_to_user_id" id="reply_to_user_id_{{ comment.id }}"
+                                value="">
+                            <textarea name="text" placeholder="输入回复内容..." required></textarea>
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                                <span id="reply-to-hint-{{ comment.id }}"
+                                    style="font-size: 0.8rem; color: #888;"></span>
+                                <button type="submit" class="btn-comment" style="padding: 6px 16px; font-size: 0.8rem;">
+                                    发送
+                                </button>
                             </div>
                         </form>
                     </div>
                 </div>
-            </div>
-            {% empty %}
-            <div style="text-align: center; padding: 40px; color: #ccc; font-style: italic;">
-                暂时还没有评论，快来抢沙发吧 🛋️
             </div>
             {% endfor %}
         </div>
@@ -445,54 +467,40 @@
 
 {% block extra_js %}
 <script>
-    function openReply(commentId, username) {
-        // Close all other reply forms first for cleanness
+    function openReply(p, u, n) {
         document.querySelectorAll('.reply-form').forEach(f => f.style.display = 'none');
-
-        const formDiv = document.getElementById(`reply-form-${commentId}`);
-        const textarea = formDiv.querySelector('textarea');
-
-        formDiv.style.display = 'block';
-        textarea.value = `@${username} `;
-        textarea.focus();
+        const d = document.getElementById(`reply-form-${p}`);
+        const i = document.getElementById(`reply_to_user_id_${p}`);
+        const s = document.getElementById(`reply-to-hint-${p}`);
+        const t = d.querySelector('textarea');
+        d.style.display = 'block';
+        i.value = u;
+        s.innerText = `回复 @${n}`;
+        t.focus();
     }
-
-    // AJAX Like
     document.getElementById('likeBtn')?.addEventListener('click', function () {
         fetch("{% url 'blog_context:toggle_like' %}", {
             method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
+            headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded' },
             body: `content_type=article&object_id={{ post.id }}`
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    document.getElementById('likeCount').innerText = data.like_count;
-                    this.classList.toggle('active', data.action === 'like');
-                }
-            });
+        }).then(r => r.json()).then(d => {
+            if (d.status === 'success') {
+                document.getElementById('likeCount').innerText = d.like_count;
+                this.classList.toggle('active', d.action === 'like');
+            }
+        });
     });
-
-    // AJAX Collection
     document.getElementById('collectBtn')?.addEventListener('click', function () {
         fetch("{% url 'blog_context:toggle_collection' %}", {
             method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
+            headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded' },
             body: `post_id={{ post.id }}`
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    document.getElementById('collectCount').innerText = data.collection_count;
-                    this.classList.toggle('active', data.action === 'collect');
-                }
-            });
+        }).then(r => r.json()).then(d => {
+            if (d.status === 'success') {
+                document.getElementById('collectCount').innerText = d.collection_count;
+                this.classList.toggle('active', d.action === 'collect');
+            }
+        });
     });
 </script>
 {% endblock %}

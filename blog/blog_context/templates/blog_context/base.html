@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}获取，分享一切{% endblock %}</title>
+
+    <!-- Fonts - Using premium fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-bg: #ffffff;
+            --accent-color: #000000;
+            --secondary-accent: #333333;
+            --text-main: #1d1d1f;
+            --text-muted: #86868b;
+            --card-border: rgba(0, 0, 0, 0.08);
+            --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+            font-family: 'Outfit', 'Noto Sans SC', sans-serif;
+            min-height: 100vh;
+            line-height: 1.5;
+            background-image:
+                radial-gradient(circle at 0% 0%, rgba(0, 0, 0, 0.02) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(0, 0, 0, 0.02) 0%, transparent 40%);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 40px;
+            width: 100%;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            position: sticky;
+            top: 0;
+            z-index: 2000;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .navbar-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .logo-img {
+            height: 32px;
+            width: auto;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-img:hover {
+            transform: scale(1.05);
+        }
+
+        .user-nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* User Profile Component */
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            background: #f5f5f7;
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition-smooth);
+            border: 1px solid transparent;
+        }
+
+        .user-pill:hover {
+            background: #e8e8ed;
+            transform: translateY(-1px);
+        }
+
+        .username-span {
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: -0.01em;
+        }
+
+        /* Avatar Styling with Circle Cropping Support */
+        .avatar-container {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 0.8rem;
+            overflow: hidden;
+            /* This ensures the image is cropped into a circle */
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #fff;
+            flex-shrink: 0;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* This crops the image to fill the squircle/circle without distortion */
+            display: block;
+        }
+
+        .icon-nav {
+            width: 22px;
+            height: 22px;
+            opacity: 0.6;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logout-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        main {
+            padding-top: 60px;
+            /* Increased padding slightly as requested */
+        }
+
+        .fade-in-content {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        footer {
+            text-align: center;
+            padding: 80px 0;
+            color: #ddd;
+            font-size: 0.8rem;
+            font-family: 'Outfit';
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-inner">
+                <a href="{% url 'blog_context:posts' %}" title="回到首页">
+                    <img src="{% static 'images/logo/img1.png' %}" alt="Logo" class="logo-img">
+                </a>
+
+                <div class="user-nav">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'accounts:user_profile' user.id %}" class="user-pill">
+                        <span class="username-span">{{ user.username }}</span>
+                        <!-- Avatar Logic: If user has uploaded avatar, show image with circular cropping -->
+                        {% if user.avatar and user.avatar.name != 'avatars/default.png' %}
+                        <div class="avatar-container">
+                            <img src="{{ user.avatar.url }}" alt="Avatar" class="avatar-img">
+                        </div>
+                        {% else %}
+                        <!-- Fallback: Auto-generated circular avatar with initial and random color -->
+                        <div class="avatar-container"
+                            style="background-color: {{ user.get_avatar_color|default:'#000' }};">
+                            {{ user.get_initial }}
+                        </div>
+                        {% endif %}
+                    </a>
+                    <form action="{% url 'accounts:logout' %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-btn" title="退出">
+                            <img src="{% static 'images/icon/退出_logout.svg' %}" alt="Logout" class="icon-nav">
+                        </button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'accounts:login' %}" class="user-pill">
+                        <span class="username-span">Join Us</span>
+                        <img src="{% static 'images/icon/添加人_person-plus-one.svg' %}" alt="Join" class="icon-nav"
+                            style="opacity: 1;">
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="fade-in-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    {% block fixed_elements %}{% endblock %}
+
+    <footer>
+        &copy; 2024 获取，分享一切 &middot; PRESERVE & SHARE
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

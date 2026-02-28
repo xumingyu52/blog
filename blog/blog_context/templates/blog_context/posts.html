@@ -1,0 +1,349 @@
+{% extends "blog_context/base.html" %}
+{% load static %}
+
+{% block title %}全部帖子 - 获取，分享一切{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Compact Header Section */
+    .page-header {
+        margin: 40px 0 32px;
+        text-align: left;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin-bottom: 8px;
+        color: var(--text-main);
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 1rem;
+        font-weight: 500;
+        max-width: 600px;
+        letter-spacing: -0.01em;
+        opacity: 0.8;
+    }
+
+    /* Minimalist Row Bar */
+    .controls-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .stats-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+
+    .view-toggle {
+        background: #fff;
+        border: 1px solid #eee;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+    }
+
+    .view-toggle:hover {
+        background: #f9f9f9;
+        border-color: #000;
+    }
+
+    .view-toggle img {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* Grid Layout - Optimized for Density */
+    .posts-grid {
+        display: grid;
+        gap: 20px;
+        /* Reduced gap */
+        transition: opacity 0.5s ease;
+        margin-bottom: 120px;
+    }
+
+    .posts-grid.waterfall-view {
+        /* Increased density: 3 columns on desktop */
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .posts-grid.list-view {
+        grid-template-columns: 1fr;
+    }
+
+    /* Card Design - More Compact and Rich */
+    .post-item {
+        position: relative;
+    }
+
+    .post-card {
+        background: #ffffff;
+        border: 1px solid #f2f2f2;
+        border-radius: 20px;
+        /* Slightly tighter corners */
+        padding: 24px;
+        /* Reduced padding */
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        height: 100%;
+        transition: var(--transition-smooth);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .post-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+        border-color: #000;
+    }
+
+    .post-tag {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: #bbb;
+    }
+
+    .post-title {
+        font-size: 1.35rem;
+        /* Slightly smaller */
+        font-weight: 800;
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+        color: #000;
+        /* Limit title lines to avoid uneven cards in waterfall */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .post-excerpt {
+        color: #666;
+        line-height: 1.5;
+        font-size: 0.95rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 8px;
+    }
+
+    .post-footer {
+        margin-top: auto;
+        padding-top: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #f9f9f9;
+    }
+
+    /* Author Info in Card */
+    .post-author-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: inherit;
+        z-index: 10;
+        /* Above card link */
+        position: relative;
+    }
+
+    .post-author-link:hover .author-name {
+        text-decoration: underline;
+    }
+
+    .author-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 800;
+        font-size: 0.65rem;
+        background-size: cover;
+        background-position: center;
+        overflow: hidden;
+        border: 1px solid #eee;
+    }
+
+    .author-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .author-name {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .post-date {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #bbb;
+    }
+
+    /* Floating Action Button */
+    .btn-fab {
+        position: fixed;
+        bottom: 40px;
+        right: 40px;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        padding: 14px 28px;
+        background: #000;
+        color: #fff;
+        border-radius: 100px;
+        font-weight: 800;
+        font-size: 0.9rem;
+        text-decoration: none;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        transition: var(--transition-smooth);
+    }
+
+    .btn-fab:hover {
+        transform: scale(1.05);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 1000px) {
+        .posts-grid.waterfall-view {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 650px) {
+        .posts-grid.waterfall-view {
+            grid-template-columns: 1fr;
+        }
+
+        .container {
+            padding: 0 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<header class="page-header">
+    <h1 class="page-title">全部帖子</h1>
+    <p class="page-subtitle">探索社区中的精彩分享，每一行文字都在编织智慧的网。</p>
+</header>
+
+<div class="controls-row">
+    <div class="stats-label">当前显示 {{ posts|length }} 个分享</div>
+    <button class="view-toggle" id="viewToggle" title="切换视图模式">
+        <img src="{% static 'images/icon/列表查看模式_view-grid-list.svg' %}" alt="Toggle" id="toggleIcon">
+    </button>
+</div>
+
+<section class="posts-grid waterfall-view" id="postsGrid">
+    {% for post in posts %}
+    <div class="post-item">
+        <a href="{% url 'blog_context:post' post.id %}" class="post-card">
+            <div class="post-tag">Featured</div>
+            <h2 class="post-title">{{ post.text }}</h2>
+            <div class="post-excerpt">
+                {% with first_entry=post.context_set.first %}
+                {{ first_entry.text|default:"探索发现中..." }}
+                {% endwith %}
+            </div>
+
+            <div class="post-footer">
+                <!-- Author Info -->
+                <object>
+                    <a href="{% url 'accounts:user_profile' post.author.id %}" class="post-author-link">
+                        <div class="author-avatar"
+                            style="{% if not post.author.avatar or post.author.avatar.name == 'avatars/default.png' %}background-color: {{ post.author.get_avatar_color }};{% endif %}">
+                            {% if post.author.avatar and post.author.avatar.name != 'avatars/default.png' %}
+                            <img src="{{ post.author.avatar.url }}" alt="" class="author-img">
+                            {% else %}
+                            {{ post.author.get_initial }}
+                            {% endif %}
+                        </div>
+                        <span class="author-name">{{ post.author.username }}</span>
+                    </a>
+                </object>
+                <div class="post-date">{{ post.date_added|date:"M d" }}</div>
+            </div>
+        </a>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 100px 0;">
+        <p style="color: #bbb; font-weight: 500;">暂时还没有帖子。</p>
+    </div>
+    {% endfor %}
+</section>
+{% endblock %}
+
+{% block fixed_elements %}
+<!-- Sticky FAB - Outside animated container -->
+<a href="{% url 'blog_context:new_post' %}" class="btn-fab">
+    <img src="{% static 'images/icon/添加_add-one.svg' %}" style="width: 18px; filter: invert(1); margin-right: 10px;"
+        alt="">
+    <span>NEW POST</span>
+</a>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const postsGrid = document.getElementById('postsGrid');
+        const viewToggle = document.getElementById('viewToggle');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        const icons = {
+            waterfall: "{% static 'images/icon/瀑布流纵向_waterfalls-v.svg' %}",
+            list: "{% static 'images/icon/列表查看模式_view-grid-list.svg' %}"
+        };
+
+        let currentMode = localStorage.getItem('viewMode') || 'waterfall';
+        applyViewMode(currentMode);
+
+        viewToggle.addEventListener('click', () => {
+            currentMode = currentMode === 'waterfall' ? 'list' : 'waterfall';
+            localStorage.setItem('viewMode', currentMode);
+            applyViewMode(currentMode);
+        });
+
+        function applyViewMode(mode) {
+            if (mode === 'list') {
+                postsGrid.classList.remove('waterfall-view');
+                postsGrid.classList.add('list-view');
+                toggleIcon.src = icons.waterfall;
+            } else {
+                postsGrid.classList.remove('list-view');
+                postsGrid.classList.add('waterfall-view');
+                toggleIcon.src = icons.list;
+            }
+        }
+    });
+</script>
+{% endblock %}

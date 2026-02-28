@@ -1,0 +1,282 @@
+{% extends "blog_context/base.html" %}
+{% load static %}
+
+{% block title %}编辑资料 - 获取，分享一切{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-bg {
+        min-height: 80vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px;
+    }
+
+    .auth-glass {
+        width: 100%;
+        max-width: 540px;
+        background: #ffffff;
+        border: 1px solid var(--card-border);
+        border-radius: 36px;
+        padding: 48px;
+        box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.08);
+        text-align: left;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-glass::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 8px;
+        background: linear-gradient(90deg, #333 0%, #000 100%);
+    }
+
+    .header-with-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        /* This pushes title to the right */
+        margin-bottom: 48px;
+        gap: 20px;
+    }
+
+    /* Avatar Upload Label/Container - Hard Physical Lock for Circle */
+    .avatar-upload-label {
+        position: relative;
+        width: 80px !important;
+        height: 80px !important;
+        min-width: 80px;
+        min-height: 80px;
+        max-width: 80px;
+        max-height: 80px;
+        flex-shrink: 0;
+        cursor: pointer;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-radius: 50%;
+        border: 4px solid #fff;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        background: #f0f0f0;
+        box-sizing: border-box;
+        overflow: visible;
+        /* Need this so badge can overlap slightly */
+    }
+
+    #avatarPreviewContainer,
+    .avatar-preview {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        object-fit: cover;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+
+    /* Fallback Initials */
+    div.avatar-preview {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: white;
+    }
+
+    .avatar-upload-label:hover {
+        transform: scale(1.08);
+        /* More dynamic hover */
+    }
+
+    .edit-badge {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        background: #000;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        z-index: 10;
+    }
+
+    .edit-badge img {
+        width: 14px;
+        height: 14px;
+        filter: invert(1);
+        object-fit: contain;
+        padding: 1px;
+        /* Extra breathing space */
+    }
+
+    .auth-title {
+        font-family: 'Outfit';
+        font-size: 1.85rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        color: var(--text-main);
+        text-align: right;
+        flex: 1;
+        margin: 0;
+    }
+
+    .form-field {
+        margin-bottom: 28px;
+    }
+
+    .form-field label {
+        display: block;
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+        color: #333;
+    }
+
+    /* Input Styles */
+    .form-field input[type="text"],
+    .form-field input[type="email"] {
+        width: 100%;
+        padding: 16px 20px;
+        border: 1px solid #eee;
+        border-radius: 18px;
+        background: #fafafa;
+        font-size: 1rem;
+        font-family: 'Outfit';
+        transition: var(--transition-smooth);
+    }
+
+    .form-field input:focus {
+        outline: none;
+        border-color: #000;
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.03);
+    }
+
+    /* Hide the original avatar field globally within the loop */
+    .hidden-field {
+        display: none !important;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 18px;
+        background: #000;
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        font-weight: 800;
+        font-size: 1.1rem;
+        cursor: pointer;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        font-family: 'Outfit';
+        margin-top: 10px;
+        transition: var(--transition-smooth);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-secondary {
+        display: block;
+        text-align: center;
+        margin-top: 20px;
+        color: #888;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .btn-secondary:hover {
+        color: #000;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-bg">
+    <div class="auth-glass">
+        <!-- Main Form -->
+        <form method="post" enctype="multipart/form-data" id="profileForm">
+            {% csrf_token %}
+
+            <div class="header-with-avatar">
+                <!-- Avatar Label acts as trigger for hidden file input -->
+                <label for="id_avatar" class="avatar-upload-label" title="点击更改头像">
+                    <div id="avatarPreviewContainer">
+                        {% if user.avatar and user.avatar.name != 'avatars/default.png' %}
+                        <img src="{{ user.avatar.url }}" alt="" class="avatar-preview" id="previewImg">
+                        {% else %}
+                        <div class="avatar-preview" id="previewInitial"
+                            style="background-color: {{ user.get_avatar_color }};">
+                            {{ user.get_initial }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="edit-badge">
+                        <img src="{% static 'images/icon/编辑2_edit-two.svg' %}" style="width: 14px; filter: invert(1);"
+                            alt="">
+                    </div>
+                </label>
+                <h1 class="auth-title">编辑个人资料</h1>
+            </div>
+
+            <!-- Manually render fields to hide the duplicate one -->
+            <div class="form-field">
+                <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                {{ form.username }}
+                {% if form.username.errors %}<div style="color: #ff4444; font-size: 0.8rem; margin-top: 6px;">{{
+                    form.username.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% if form.email.errors %}<div style="color: #ff4444; font-size: 0.8rem; margin-top: 6px;">{{
+                    form.email.errors.0 }}</div>{% endif %}
+            </div>
+
+            <!-- The real avatar field, hidden from view but functional -->
+            <div style="display: none;">
+                {{ form.avatar }}
+            </div>
+
+            <button type="submit" class="btn-submit">保存更改</button>
+            <div style="margin-top: 10px;">
+                <a href="{% url 'accounts:user_profile' user.id %}" class="btn-secondary">取消并返回</a>
+                <a href="{% url 'accounts:password_change' %}" class="btn-secondary"
+                    style="color: #ff4444; margin-top: 8px;">修改账户密码</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Live Avatar Preview
+    const avatarInput = document.getElementById('id_avatar');
+    const previewContainer = document.getElementById('avatarPreviewContainer');
+
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    // Create img if it doesn't exist (e.g. initial view)
+                    previewContainer.innerHTML = `<img src="${e.target.result}" alt="" class="avatar-preview">`;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+</script>
+{% endblock %}

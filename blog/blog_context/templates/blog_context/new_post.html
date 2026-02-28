@@ -1,0 +1,87 @@
+{% extends "blog_context/base.html" %}
+{% load static %}
+
+{% block title %}发布新帖子 - 获取，分享一切{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: white;
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+        max-width: 700px;
+        margin: 40px auto;
+    }
+
+    .form-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 14px;
+        border: 1px solid #eee;
+        border-radius: 12px;
+        background: #f9f9f9;
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #000;
+        background: #fff;
+    }
+
+    .btn-submit {
+        background: #000;
+        color: #fff;
+        padding: 14px 28px;
+        border-radius: 30px;
+        border: none;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .btn-submit:hover {
+        background: #333;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h1 class="form-title">发布新帖子</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>帖子标题</label>
+            {{ title_form.text }}
+        </div>
+        <div class="form-group">
+            <label>帖子内容</label>
+            {{ context_form.text }}
+        </div>
+        <button type="submit" class="btn-submit">发布帖子</button>
+    </form>
+</div>
+{% endblock %}

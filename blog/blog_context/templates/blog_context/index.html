@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>获取，分享一切 - 论坛</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .hero {
+            position: relative;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        /* 背景装饰图（替换为你自己的图片路径） */
+        .hero-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            max-width: 900px;
+            z-index: 0;
+            opacity: 0.9;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 3rem;
+            line-height: 1.2;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 36px;
+            background-color: #000000;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 0;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #333333;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .btn {
+                padding: 12px 28px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header
+        style="position: absolute; top: 40px; left: 40px; display: flex; align-items: center; gap: 12px; z-index: 10;">
+        <img src="{% static 'images/logo/img1.png' %}" alt="Logo" style="height: 32px; width: auto;">
+        <span style="font-weight: 700; font-size: 1.1rem; color: #000;">获取，分享一切</span>
+    </header>
+    <div class="hero">
+
+        <!-- 替换为你的背景装饰图路径 -->
+        <img src="{% static 'images/获取，分享一切-2.png' %}" alt="" class="hero-bg">
+        <div class="hero-content">
+            <h1 class="hero-title">获取，分享一切</h1>
+            <a href="{% url 'accounts:login' %}" class="btn">进入论坛</a>
+        </div>
+    </div>
+</body>
+
+</html>

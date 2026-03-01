@@ -121,7 +121,6 @@
 
     .entry-div {
         margin-bottom: 16px;
-        white-space: pre-wrap;
         font-size: 1.05rem;
         line-height: 1.7;
         color: #222;
@@ -163,6 +162,29 @@
     .btn-icon {
         width: 16px;
         height: 16px;
+    }
+
+    .like-comment-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 700;
+        transition: var(--transition-smooth);
+        cursor: pointer;
+    }
+
+    .like-comment-btn:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .like-comment-btn.active {
+        color: #ff4757;
+    }
+
+    .like-comment-btn.active .like-count {
+        color: #ff4757;
     }
 
     .comment-section {
@@ -283,6 +305,51 @@
         border: 1px solid #efefef;
     }
 
+    /* 新增图片样式 */
+    .post-image-container,
+    .comment-image-container {
+        margin-top: 12px;
+        display: inline-flex;
+        max-width: 100%;
+    }
+
+    .post-image,
+    .comment-image,
+    .markdown-content img {
+        max-width: 95%;
+        max-height: 600px;
+        display: block;
+        margin: 16px auto;
+        object-fit: contain;
+        border-radius: 12px;
+        border: 1px solid #eee;
+    }
+
+    .file-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 8px;
+    }
+
+    .file-input-label {
+        font-size: 0.8rem;
+        color: #666;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        background: #f0f0f0;
+        transition: 0.2s;
+        width: fit-content;
+    }
+
+    .file-input-label:hover {
+        background: #e0e0e0;
+    }
+
     @media (max-width: 600px) {
         .post-article {
             padding: 20px;
@@ -339,7 +406,11 @@
 
         <div class="post-body">
             {% for entry in entries %}
-            <div class="entry-div">{{ entry.text }}</div>
+            <div class="entry-div">
+                <div class="markdown-content">{{ entry.text }}</div>{% if entry.image %}<div
+                    class="post-image-container"><img src="{{ entry.image.url }}" class="post-image"
+                        alt="Post content image"></div>{% endif %}
+            </div>
             {% empty %}
             <p style="color: #999; font-size: 0.95rem;">无正文内容。</p>
             {% endfor %}
@@ -370,10 +441,15 @@
         </h2>
         {% if user.is_authenticated %}
         <div class="comment-form-container">
-            <form action="{% url 'blog_context:post_comment' post.id %}" method="post" class="comment-form">
+            <form action="{% url 'blog_context:post_comment' post.id %}" method="post" class="comment-form"
+                enctype="multipart/form-data">
                 {% csrf_token %}
                 <textarea name="text" placeholder="说说你的看法..." required></textarea>
-                <div style="text-align: right; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                    <label class="file-input-label">
+                        <input type="file" name="image" accept="image/*" style="display: none;">
+                        <span>📷 添加图片</span>
+                    </label>
                     <button type="submit" class="btn-comment">发表</button>
                 </div>
             </form>
@@ -408,19 +484,33 @@
                     <div class="comment-text">
                         {{ comment.text }}
                     </div>
-                    <div class="comment-actions">
+                    {% if comment.image %}
+                    <div class="comment-image-container">
+                        <img src="{{ comment.image.url }}" class="comment-image" alt="Comment image">
+                    </div>
+                    {% endif %}
+                    <div class="comment-actions" style="display: flex; gap: 12px; align-items: center;">
                         {% if user.is_authenticated %}
                         <a class="action-link"
                             onclick="openReply('{{ comment.id }}', '{{ comment.user.id }}', '{{ comment.user.username }}')">
                             回复
                         </a>
+                        <span
+                            class="action-link like-comment-btn {% if comment.id in liked_comment_ids %}active{% endif %}"
+                            onclick="toggleCommentLike(this, 'comment', '{{ comment.id }}')">
+                            赞 <span class="like-count">{{ comment.like_count }}</span>
+                        </span>
+                        {% else %}
+                        <span class="comment-time" style="font-size: 0.75rem;">赞 {{ comment.like_count }}</span>
                         {% endif %}
                     </div>
 
                     {% if comment.replies.all %}
                     <div class="replies-container">
-                        {% for reply in comment.replies.all %}
-                        <div class="comment-item" style="margin-bottom: 12px;">
+                        {% with all_replies=comment.sorted_replies %}
+                        {% for reply in all_replies %}
+                        <div class="comment-item reply-item-{{ comment.id }}"
+                            style="margin-bottom: 12px; {% if forloop.counter > 2 %}display: none;{% endif %}">
                             <div class="comment-avatar"
                                 style="width: 24px; height: 24px; font-size: 0.6rem; {% if not reply.user.avatar or reply.user.avatar.name == 'avatars/default.png' %}background-color: {{ reply.user.get_avatar_color }};{% endif %}">
                                 {% if reply.user.avatar and reply.user.avatar.name != 'avatars/default.png' %}
@@ -450,22 +540,45 @@
                                 <div class="comment-text">
                                     {{ reply.text }}
                                 </div>
-                                <div class="comment-actions">
+                                {% if reply.image %}
+                                <div class="comment-image-container">
+                                    <img src="{{ reply.image.url }}" class="comment-image" alt="Reply image">
+                                </div>
+                                {% endif %}
+                                <div class="comment-actions" style="display: flex; gap: 10px; align-items: center;">
                                     {% if user.is_authenticated %}
                                     <a class="action-link"
                                         onclick="openReply('{{ comment.id }}', '{{ reply.user.id }}', '{{ reply.user.username }}')">
                                         回复
                                     </a>
+                                    <span
+                                        class="action-link like-comment-btn {% if reply.id in liked_reply_ids %}active{% endif %}"
+                                        onclick="toggleCommentLike(this, 'reply', '{{ reply.id }}')">
+                                        赞 <span class="like-count">{{ reply.like_count }}</span>
+                                    </span>
+                                    {% else %}
+                                    <span class="comment-time" style="font-size: 0.7rem;">赞 {{ reply.like_count
+                                        }}</span>
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
+
+                        {% if all_replies|length > 2 %}
+                        <div class="action-link" id="show-more-btn-{{ comment.id }}"
+                            onclick="toggleReplies('{{ comment.id }}')"
+                            style="margin-top: 8px; font-weight: 700; color: #555; font-size: 0.8rem;">
+                            展开更多 {{ all_replies|length|add:"-2" }} 条回复
+                        </div>
+                        {% endif %}
+                        {% endwith %}
                     </div>
                     {% endif %}
 
                     <div class="reply-form" id="reply-form-{{ comment.id }}">
-                        <form action="{% url 'blog_context:post_comment' post.id %}" method="post" class="comment-form">
+                        <form action="{% url 'blog_context:post_comment' post.id %}" method="post" class="comment-form"
+                            enctype="multipart/form-data">
                             {% csrf_token %}
                             <input type="hidden" name="parent_comment_id" value="{{ comment.id }}">
                             <input type="hidden" name="reply_to_user_id" id="reply_to_user_id_{{ comment.id }}"
@@ -473,8 +586,14 @@
                             <textarea name="text" placeholder="输入回复内容..." required></textarea>
                             <div
                                 style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                                <span id="reply-to-hint-{{ comment.id }}"
-                                    style="font-size: 0.75rem; color: #888;"></span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <label class="file-input-label">
+                                        <input type="file" name="image" accept="image/*" style="display: none;">
+                                        <span>📷</span>
+                                    </label>
+                                    <span id="reply-to-hint-{{ comment.id }}"
+                                        style="font-size: 0.75rem; color: #888;"></span>
+                                </div>
                                 <button type="submit" class="btn-comment" style="padding: 6px 16px; font-size: 0.8rem;">
                                     发送
                                 </button>
@@ -490,7 +609,16 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'images/js/marked.min.js' %}"></script>
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.markdown-content').forEach(function (el) {
+            // Get raw text and parse it into HTML
+            let rawText = el.textContent || el.innerText;
+            el.innerHTML = marked.parse(rawText);
+        });
+    });
+
     function openReply(p, u, n) {
         document.querySelectorAll('.reply-form').forEach(f => f.style.display = 'none');
         const d = document.getElementById(`reply-form-${p}`);
@@ -502,6 +630,31 @@
         s.innerText = `回复 @${n}`;
         t.focus();
     }
+
+    function toggleCommentLike(btn, type, id) {
+        fetch("{% url 'blog_context:toggle_like' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `content_type=${type}&object_id=${id}`
+        }).then(r => r.json()).then(d => {
+            if (d.status === 'success') {
+                btn.querySelector('.like-count').innerText = d.like_count;
+                btn.classList.toggle('active', d.action === 'like');
+            }
+        });
+    }
+
+    function toggleReplies(id) {
+        const replies = document.querySelectorAll(`.reply-item-${id}`);
+        const btn = document.getElementById(`show-more-btn-${id}`);
+        const isHidden = replies[2].style.display === 'none';
+
+        replies.forEach((r, idx) => {
+            if (idx >= 2) r.style.display = isHidden ? 'flex' : 'none';
+        });
+        btn.innerText = isHidden ? '收起回复' : `展开更多 ${replies.length - 2} 条回复`;
+    }
+
     document.getElementById('likeBtn')?.addEventListener('click', function () {
         fetch("{% url 'blog_context:toggle_like' %}", {
             method: 'POST',

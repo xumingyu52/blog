@@ -4,6 +4,9 @@ from .models import Title, Context, Like, Collection, Comment
 from .forms import TitleForm,ContextForm,CommentForm
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
+from django.core.files.storage import FileSystemStorage
+import uuid
+from django.utils import timezone
 # 新增：导入登录装饰器和登录验证
 from django.contrib.auth.decorators import login_required
 # Create your views here.
@@ -35,9 +38,13 @@ def post(request, post_id):
     # 用户状态
     is_liked = False
     is_collected = False
+    liked_comment_ids = []
+    liked_reply_ids = []
     if request.user.is_authenticated:
         is_liked = Like.get_user_like_status(request.user, 'article', post.id)
         is_collected = Collection.get_user_collection_status(request.user, post)
+        liked_comment_ids = Like.objects.filter(user=request.user, content_type='comment').values_list('object_id', flat=True)
+        liked_reply_ids = Like.objects.filter(user=request.user, content_type='reply').values_list('object_id', flat=True)
     
     comment_form = CommentForm()
 
@@ -50,6 +57,8 @@ def post(request, post_id):
         'collection_count': collection_count,
         'is_liked': is_liked,
         'is_collected': is_collected,
+        'liked_comment_ids': liked_comment_ids,
+        'liked_reply_ids': liked_reply_ids,
     }
     return render(request, 'blog_context/post_content.html', context)
 
@@ -61,7 +70,7 @@ def new_post(request):
         context_form = ContextForm(prefix='context')
     else:
         title_form = TitleForm(request.POST, prefix='title')
-        context_form = ContextForm(request.POST, prefix='context') 
+        context_form = ContextForm(request.POST, request.FILES, prefix='context') 
 
         if title_form.is_valid() and context_form.is_valid():
             title_instance = title_form.save(commit=False)
@@ -96,9 +105,9 @@ def edit_post(request, post_id):
         title_form = TitleForm(request.POST, instance=title_obj, prefix='title')
         # 提交内容时，需要绑定title外键（context_obj为None时，手动传initial）
         if context_obj:
-            context_form = ContextForm(request.POST, instance=context_obj, prefix='context')
+            context_form = ContextForm(request.POST, request.FILES, instance=context_obj, prefix='context')
         else:
-            context_form = ContextForm(request.POST, initial={'title': title_obj}, prefix='context')
+            context_form = ContextForm(request.POST, request.FILES, initial={'title': title_obj}, prefix='context')
 
         # 验证并保存
         if title_form.is_valid() and context_form.is_valid():
@@ -151,7 +160,7 @@ def toggle_collection(request):
 def post_comment(request, post_id):
     post = get_object_or_404(Title, id=post_id)
     if request.method == 'POST':
-        form = CommentForm(request.POST)
+        form = CommentForm(request.POST, request.FILES)
         if form.is_valid():
             comment = form.save(commit=False)
             comment.post = post
@@ -176,4 +185,18 @@ def collect_list(request):
     collections = Collection.objects.filter(user=request.user)
     return render(request, 'blog_context/collect_list.html', {'collections': collections})
 
-
+@login_required
+def upload_image(request):
+    """处理Markdown图片上传"""
+    if request.method == 'POST' and request.FILES.get('image'):
+        image = request.FILES['image']
+        ext = image.name.split('.')[-1]
+        filename = f"{uuid.uuid4().hex}.{ext}"
+        today = timezone.now().strftime("%Y/%m/%d")
+        path = f"post_images/{today}/{filename}"
+        
+        fs = FileSystemStorage()
+        saved_filename = fs.save(path, image)
+        url = fs.url(saved_filename)
+        return JsonResponse({"success": 1, "url": url})
+    return JsonResponse({"success": 0, "message": "上传失败"})

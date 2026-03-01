@@ -2,7 +2,7 @@ from django.db import models
 #导入自定义用户模型
 from accounts.models import CustomUser
 from django.utils import timezone
-
+import uuid
 
 # Create your models here.
 
@@ -16,12 +16,19 @@ class Title(models.Model):
     def __str__(self):
         """模型表示方法"""
         return self.text
-    
+
+def post_image_upload_path(instance, filename):
+    #生成一个随机的文件名
+    ext = filename.split('.')[-1]
+    return f'post_images/{timezone.now().strftime("%Y/%m/%d")}/{uuid.uuid4().hex}.{ext}'
 class Context(models.Model):
     """帖子文章内容"""
     title = models.ForeignKey(Title, on_delete=models.CASCADE)
     text = models.TextField()
     date_added = models.DateTimeField(auto_now_add=True)
+
+    #新增图片字段
+    image = models.ImageField(upload_to=post_image_upload_path, blank=True, null=True)
 
     class Meta:
         """用于存储模型的额外信息"""
@@ -127,6 +134,7 @@ class Comment(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='comments')
     post = models.ForeignKey(Title, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField()
+    image = models.ImageField(upload_to='comment_images/', blank=True, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
 
     #回复
@@ -147,8 +155,30 @@ class Comment(models.Model):
         blank=True,
     )
 
+    @property
+    def like_count(self):
+        # 统一使用 'comment' 作为 Comment 模型的 content_type，或者根据是否有父评论区分
+        ctype = 'comment' if self.parent_comment is None else 'reply'
+        return Like.objects.filter(content_type=ctype, object_id=self.id).count()
+
+    def is_liked_by_user(self, user):
+        if not user or user.is_anonymous:
+            return False
+        ctype = 'comment' if self.parent_comment is None else 'reply'
+        return Like.objects.filter(user=user, content_type=ctype, object_id=self.id).exists()
+
+    @property
+    def sorted_replies(self):
+        """返回按点赞数排序的回复"""
+        replies = list(self.replies.all())
+        # 注意：这里在大型应用中可能会有性能问题，但在小型 blog 中可以接受
+        # 如果需要高性能，应该在 Comment 模型中增加 like_count 冗余字段或使用 annotate
+        replies.sort(key=lambda r: r.like_count, reverse=True)
+        return replies
+
     class Meta:
         verbose_name = '评论'
         verbose_name_plural = '评论'
+
     def __str__(self):
         return f"{self.user.username} 评论了 {self.post.text[:20]}..."

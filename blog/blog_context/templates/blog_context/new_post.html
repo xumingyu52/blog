@@ -4,14 +4,15 @@
 {% block title %}发布新帖子 - 获取，分享一切{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'images/css/all.min.css' %}">
+<link rel="stylesheet" href="{% static 'images/css/quill.snow.css' %}">
 <style>
     .form-card {
         background: white;
-        border: 1px solid var(--card-border);
         border-radius: 20px;
         padding: 40px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
-        max-width: 700px;
+        max-width: 900px;
         margin: 40px auto;
     }
 
@@ -65,23 +66,179 @@
         background: #333;
         transform: translateY(-2px);
     }
+
+    /* Quill 编辑器样式 */
+    #editor-container {
+        height: auto;
+        min-height: 350px;
+        background: white;
+        border-radius: 0 0 12px 12px;
+        border: 1px solid #ccc;
+        border-top: none;
+        font-family: inherit;
+        font-size: 1rem;
+    }
+
+    .ql-toolbar {
+        background: #f9f9f9;
+        border-radius: 12px 12px 0 0;
+        border: 1px solid #ccc;
+        padding: 12px 16px !important;
+    }
+
+    .ql-editor {
+        min-height: 350px;
+        padding: 16px 20px !important;
+        line-height: 1.6;
+    }
+
+    .ql-editor img {
+        max-width: 95%;
+        width: auto;
+        height: auto;
+        max-height: 500px;
+        object-fit: contain;
+        border-radius: 12px;
+        display: block;
+        margin: 16px auto;
+    }
+
+    /* 工具栏自定义图标重置 */
+    .ql-toolbar button {
+        padding: 4px;
+        margin-right: 4px;
+        transition: 0.2s;
+    }
+
+    .ql-toolbar button.ql-active {
+        background-color: #e3e3e3 !important;
+        border-radius: 6px;
+    }
+
+    .ql-toolbar button img {
+        width: 18px;
+        height: 18px;
+        display: block;
+        margin: auto;
+        pointer-events: none;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="form-card">
     <h1 class="form-title">发布新帖子</h1>
-    <form method="post">
+    <form method="post" enctype="multipart/form-data" id="post-form">
         {% csrf_token %}
         <div class="form-group">
             <label>帖子标题</label>
             {{ title_form.text }}
         </div>
-        <div class="form-group">
+        <div class="form-group" style="display:none;">
             <label>帖子内容</label>
             {{ context_form.text }}
         </div>
-        <button type="submit" class="btn-submit">发布帖子</button>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+            <label>帖子内容</label>
+            <div id="toolbar-container">
+                <span class="ql-formats">
+                    <button class="ql-header" value="1"></button>
+                    <button class="ql-header" value="2"></button>
+                    <button class="ql-header" value="3"></button>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-code-block"></button>
+                    <button class="ql-list" value="bullet"></button>
+                    <button class="ql-list" value="ordered"></button>
+                </span>
+                <span class="ql-formats">
+                    <button class="ql-image"></button>
+                </span>
+            </div>
+            <div id="editor-container"></div>
+        </div>
+
+        <button type="submit" class="btn-submit" style="margin-top: 10px;">发布帖子</button>
     </form>
+    <input type="file" id="quill-file-upload" accept="image/*" style="display: none;">
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'images/js/quill.min.js' %}"></script>
+<script>
+    // 替换Quill内置图标为你本地的SVGs
+    var icons = Quill.import('ui/icons');
+    icons['header']['1'] = '<img src="{% static "images/icon/标题_h1.svg" %}" />';
+    icons['header']['2'] = '<img src="{% static "images/icon/标题1_h2.svg" %}" />';
+    icons['header']['3'] = '<img src="{% static "images/icon/标题2_h3.svg" %}" />';
+    icons['code-block'] = '<img src="{% static "images/icon/代码_code.svg" %}" />';
+    icons['list']['bullet'] = '<img src="{% static "images/icon/列表2_list-two.svg" %}" />';
+    icons['list']['ordered'] = '<img src="{% static "images/icon/数字列表_list-numbers.svg" %}" />';
+    icons['image'] = '<img src="{% static "images/icon/增加图片_add-pic.svg" %}" />';
+
+    var quill = new Quill('#editor-container', {
+        theme: 'snow',
+        modules: {
+            toolbar: {
+                container: '#toolbar-container',
+                handlers: {
+                    image: function () {
+                        document.getElementById('quill-file-upload').click();
+                    }
+                }
+            }
+        }
+    });
+
+    // 防止粘贴 base64 大图，只允许纯文本或后续的上传机制
+    quill.clipboard.addMatcher('IMG', function (node, delta) {
+        if (node.src.startsWith('data:image')) {
+            return new Delta(); // 忽略 base64 图片粘贴
+        }
+        return delta;
+    });
+
+    // 提交时绑定 HTML
+    document.getElementById("post-form").onsubmit = function () {
+        document.getElementById("id_context-text").value = quill.root.innerHTML;
+    };
+
+    // 文件上传处理
+    document.getElementById('quill-file-upload').addEventListener('change', function () {
+        if (this.files && this.files[0]) {
+            uploadAndInsertImage(this.files[0]);
+        }
+        this.value = '';
+    });
+
+    function uploadAndInsertImage(file) {
+        var formData = new FormData();
+        formData.append("image", file);
+
+        var range = quill.getSelection(true);
+        // 先插入占位符
+        quill.insertText(range.index, '上传中...', 'user');
+
+        fetch("{% url 'blog_context:upload_image' %}", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        }).then(response => response.json())
+            .then(data => {
+                quill.deleteText(range.index, 5); // 删除"上传中..."
+                if (data.success) {
+                    quill.insertEmbed(range.index, 'image', data.url);
+                } else {
+                    alert("上传失败: " + data.message);
+                }
+            }).catch(err => {
+                quill.deleteText(range.index, 5);
+                alert("上传出错");
+            });
+    }
+</script>
 {% endblock %}

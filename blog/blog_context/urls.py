@@ -22,4 +22,5 @@ urlpatterns = [
     path('toggle_collection/', views.toggle_collection, name='toggle_collection'),
     path('posts/<int:post_id>/comment/', views.post_comment, name='post_comment'),
     path('collections/', views.collect_list, name='collect_list'),
+    path('upload_image/', views.upload_image, name='upload_image'),
 ]

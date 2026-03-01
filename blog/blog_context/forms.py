@@ -11,11 +11,11 @@ class ContextForm(forms.ModelForm):
     """context对应表单"""
     class Meta:
         model = Context
-        fields = ['text']
-        labels = {'text':''}
+        fields = ['text','image']
+        labels = {'text':'','image':''}
 
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
-        fields = ['text']
+        fields = ['text', 'image']
         labels = {'text':''}

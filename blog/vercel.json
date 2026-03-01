@@ -1,5 +1,5 @@
 {
-    "buildCommand": "pip install --break-system-packages -r requirements.txt && python manage.py collectstatic --noinput && mkdir -p public",
+    "buildCommand": "pip install --break-system-packages -r requirements.txt && python manage.py collectstatic --noinput && mkdir -p public && echo '<!-- Vercel build artifact -->' > public/index.html",
     "installCommand": "pip install --break-system-packages -r requirements.txt",
     "outputDirectory": "public",
     "routes": [

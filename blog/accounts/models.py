@@ -1,19 +1,22 @@
 from django.db import models
-
+import uuid
+from django.utils import timezone
 # Create your models here.
 from django.contrib.auth.models import AbstractUser, UserManager
 
-#时区
-from django.utils.timezone import now
 
 class CustomUserManager(UserManager):
     pass
 
+def avatar_upload_path(instance, filename):
+    #生成一个随机的文件名
+    ext = filename.split('.')[-1]
+    return f'avatars/{timezone.now().strftime("%Y/%m/%d")}/{uuid.uuid4().hex}.{ext}'
 class CustomUser(AbstractUser):
     #头像块
     avatar = models.ImageField(
         #上传后的存储路径
-        upload_to='avatars/%Y/%m/%d',
+        upload_to=avatar_upload_path,
         #默认头像路径
         default='avatars/default.png',
         #允许用户暂时不上传图像

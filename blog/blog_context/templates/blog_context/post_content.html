@@ -1,20 +1,21 @@
 {% extends "blog_context/base.html" %}
 {% load static %}
 
-{% block title %}{{ post.text }} - 获取，分享一切{% endblock %}
+{% block title %}
+{{ post.text }}-分享
+{% endblock %}
 
 {% block extra_css %}
 <style>
     .back-link {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         color: var(--text-muted);
         text-decoration: none;
-        font-size: 0.95rem;
-        margin-bottom: 24px;
+        font-size: 0.9rem;
+        margin-bottom: 16px;
         transition: var(--transition-smooth);
-        font-weight: 500;
     }
 
     .back-link:hover {
@@ -22,27 +23,31 @@
         transform: translateX(-4px);
     }
 
-    .post-article {
-        background: white;
-        border-radius: 24px;
-        padding: 40px;
-        box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.05);
-        margin-bottom: 60px;
+    .post-container-group {
+        box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.05);
+        border-radius: 20px;
+        overflow: hidden;
         border: 1px solid var(--card-border);
+        background: white;
+        margin-bottom: 40px;
+    }
+
+    .post-article {
+        padding: 30px 40px;
     }
 
     .post-header {
-        margin-bottom: 40px;
-        padding-bottom: 32px;
-        border-bottom: 1px solid #f5f5f5;
+        margin-bottom: 8px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f2f2f2;
     }
 
     .post-title {
-        font-size: 2.2rem;
-        font-weight: 800;
-        letter-spacing: -0.03em;
-        line-height: 1.25;
-        margin-bottom: 24px;
+        font-size: 1.8rem;
+        font-weight: 850;
+        letter-spacing: -0.02em;
+        line-height: 1.3;
+        margin-bottom: 12px;
         color: #000;
     }
 
@@ -50,127 +55,629 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 20px;
-        flex-wrap: wrap;
+        gap: 16px;
     }
 
     .post-author-box {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         text-decoration: none;
         color: inherit;
     }
 
     .author-avatar-large {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-weight: 800;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         background-size: cover;
         background-position: center;
         border: 2px solid #fff;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .author-details {
-        display: flex;
-        flex-direction: column;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
     }
 
     .author-name-bold {
-        font-weight: 700;
-        font-size: 0.95rem;
+        font-weight: 750;
+        font-size: 0.9rem;
         color: #000;
+        display: block;
     }
 
     .post-date-small {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         color: var(--text-muted);
+        display: block;
     }
 
-    .edit-btn-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 20px;
-        border-radius: 100px;
+    .btn-edit {
+        display: inline-block;
+        padding: 6px 16px;
         background: #f5f5f7;
         color: #000;
+        border-radius: 100px;
         text-decoration: none;
-        font-size: 0.85rem;
         font-weight: 700;
+        font-size: 0.8rem;
         transition: var(--transition-smooth);
+        border: 1px solid #eee;
     }
 
-    .edit-btn-pill:hover {
+    .btn-edit:hover {
         background: #000;
         color: #fff;
         transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
     }
 
     .post-body {
-        font-size: 1.15rem;
-        line-height: 1.8;
-        color: #333;
+        margin-top: 10px;
     }
 
-    .entry-snippet {
-        margin-bottom: 32px;
-        white-space: pre-wrap;
+    .entry-div {
+        margin-bottom: 16px;
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: #222;
+    }
+
+    .interaction-bar {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .interact-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 100px;
+        border: 1px solid #eee;
+        background: #fff;
+        color: #555;
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+    }
+
+    .interact-btn.active.like-btn {
+        background: #ff4757;
+        color: #fff;
+        border-color: #ff4757;
+    }
+
+    .interact-btn.active.collect-btn {
+        background: #ffa502;
+        color: #fff;
+        border-color: #ffa502;
+    }
+
+    .btn-icon {
+        width: 16px;
+        height: 16px;
+    }
+
+    .like-comment-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 700;
+        transition: var(--transition-smooth);
+        cursor: pointer;
+    }
+
+    .like-comment-btn:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .like-comment-btn.active {
+        color: #ff4757;
+    }
+
+    .like-comment-btn.active .like-count {
+        color: #ff4757;
+    }
+
+    .comment-section {
+        background: #fafafc;
+        padding: 30px 40px;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 850;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .comment-form-container {
+        margin-bottom: 24px;
+    }
+
+    .comment-form textarea {
+        width: 100%;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 12px 16px;
+        min-height: 60px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        resize: vertical;
+        background: white;
+        transition: border-color 0.3s ease;
+    }
+
+    .btn-comment {
+        padding: 8px 22px;
+        background: #000;
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        font-weight: 750;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+    }
+
+    .comment-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .comment-item {
+        display: flex;
+        gap: 12px;
+    }
+
+    .comment-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 800;
+        font-size: 0.75rem;
+        overflow: hidden;
+    }
+
+    .comment-content {
+        flex: 1;
+    }
+
+    .comment-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+    }
+
+    .comment-user {
+        font-weight: 750;
+        color: #000;
+        text-decoration: none;
+    }
+
+    .comment-time {
+        font-size: 0.75rem;
+        color: #aaa;
+    }
+
+    .comment-text {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: #333;
+        margin: 2px 0 6px 0;
+    }
+
+    .action-link {
+        font-size: 0.75rem;
+        color: #888;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .replies-container {
+        margin-top: 10px;
+        padding-left: 12px;
+        border-left: 2px solid #eee;
+    }
+
+    .reply-form {
+        margin-top: 10px;
+        display: none;
+        background: white;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid #efefef;
+    }
+
+    /* 新增图片样式 */
+    .post-image-container,
+    .comment-image-container {
+        margin-top: 12px;
+        display: inline-flex;
+        max-width: 100%;
+    }
+
+    .post-image,
+    .comment-image,
+    .markdown-content img {
+        max-width: 95%;
+        max-height: 600px;
+        display: block;
+        margin: 16px auto;
+        object-fit: contain;
+        border-radius: 12px;
+        border: 1px solid #eee;
+    }
+
+    .file-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 8px;
+    }
+
+    .file-input-label {
+        font-size: 0.8rem;
+        color: #666;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        background: #f0f0f0;
+        transition: 0.2s;
+        width: fit-content;
+    }
+
+    .file-input-label:hover {
+        background: #e0e0e0;
+    }
+
+    @media (max-width: 600px) {
+        .post-article {
+            padding: 20px;
+        }
+
+        .comment-section {
+            padding: 20px;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div style="margin-top: 20px;"> <!-- Add extra space at top -->
+<div style="margin-top: 10px;">
     <a href="{% url 'blog_context:posts' %}" class="back-link">
-        <span style="font-size: 1.2rem; line-height: 1;">&larr;</span> 返回帖子列表
+        <span style="font-size: 1.1em;">&larr;</span>
+        返回
     </a>
 </div>
 
-<article class="post-article">
-    <header class="post-header">
-        <h1 class="post-title">{{ post.text }}</h1>
+<div class="post-container-group">
+    <article class="post-article">
+        <header class="post-header">
+            <h1 class="post-title">
+                {{ post.text }}
+            </h1>
+            <div class="post-info-row">
+                <a href="{% url 'accounts:user_profile' post.author.id %}" class="post-author-box">
+                    <div class="author-avatar-large"
+                        style="{% if not post.author.avatar or post.author.avatar.name == 'avatars/default.png' %}background-color: {{ post.author.get_avatar_color }};{% endif %}">
+                        {% if post.author.avatar and post.author.avatar.name != 'avatars/default.png' %}
+                        <img src="{{ post.author.avatar.url }}"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        {% else %}
+                        {{ post.author.get_initial }}
+                        {% endif %}
+                    </div>
+                    <div class="author-details">
+                        <span class="author-name-bold">
+                            {{ post.author.username }}
+                        </span>
+                        <span class="post-date-small">
+                            {{ post.date_added|date:"Y年m月d日 H:i" }}
+                        </span>
+                    </div>
+                </a>
+                {% if user == post.author %}
+                <a href="{% url 'blog_context:edit_post' post.id %}" class="btn-edit">
+                    编辑
+                </a>
+                {% endif %}
+            </div>
+        </header>
 
-        <div class="post-info-row">
-            <a href="{% url 'accounts:user_profile' post.author.id %}" class="post-author-box">
-                <div class="author-avatar-large"
-                    style="{% if not post.author.avatar or post.author.avatar.name == 'avatars/default.png' %}background-color: {{ post.author.get_avatar_color }};{% endif %}">
-                    {% if post.author.avatar and post.author.avatar.name != 'avatars/default.png' %}
-                    <img src="{{ post.author.avatar.url }}" alt=""
-                        style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+        <div class="post-body">
+            {% for entry in entries %}
+            <div class="entry-div">
+                <div class="markdown-content">{{ entry.text }}</div>{% if entry.image %}<div
+                    class="post-image-container"><img src="{{ entry.image.url }}" class="post-image"
+                        alt="Post content image"></div>{% endif %}
+            </div>
+            {% empty %}
+            <p style="color: #999; font-size: 0.95rem;">无正文内容。</p>
+            {% endfor %}
+        </div>
+
+        <div class="interaction-bar">
+            <button class="interact-btn like-btn {% if is_liked %}active{% endif %}" id="likeBtn">
+                <img src="{% static 'images/icon/赞_thumbs-up.svg' %}" class="btn-icon" alt="">
+                <span id="likeCount">
+                    {{ like_count }}
+                </span>
+                赞
+            </button>
+            <button class="interact-btn collect-btn {% if is_collected %}active{% endif %}" id="collectBtn">
+                <img src="{% static 'images/icon/喜欢_like.svg' %}" class="btn-icon" alt="">
+                <span id="collectCount">
+                    {{ collection_count }}
+                </span>
+                喜欢
+            </button>
+        </div>
+    </article>
+
+    <section class="comment-section">
+        <h2 class="section-title">
+            <span>💬</span>
+            评论交流 ({{ post.comments.count }})
+        </h2>
+        {% if user.is_authenticated %}
+        <div class="comment-form-container">
+            <form action="{% url 'blog_context:post_comment' post.id %}" method="post" class="comment-form"
+                enctype="multipart/form-data">
+                {% csrf_token %}
+                <textarea name="text" placeholder="说说你的看法..." required></textarea>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                    <label class="file-input-label">
+                        <input type="file" name="image" accept="image/*" style="display: none;">
+                        <span>📷 添加图片</span>
+                    </label>
+                    <button type="submit" class="btn-comment">发表</button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 16px; color: #888; font-size: 0.9rem;">
+            请登录后参与评论
+        </div>
+        {% endif %}
+
+        <div class="comment-list">
+            {% for comment in comments %}
+            <div class="comment-item">
+                <div class="comment-avatar"
+                    style="{% if not comment.user.avatar or comment.user.avatar.name == 'avatars/default.png' %}background-color: {{ comment.user.get_avatar_color }};{% endif %}">
+                    {% if comment.user.avatar and comment.user.avatar.name != 'avatars/default.png' %}
+                    <img src="{{ comment.user.avatar.url }}"
+                        style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                     {% else %}
-                    {{ post.author.get_initial }}
+                    {{ comment.user.get_initial }}
                     {% endif %}
                 </div>
-                <div class="author-details">
-                    <span class="author-name-bold">{{ post.author.username }}</span>
-                    <span class="post-date-small">{{ post.date_added|date:"Y年m月d日 H:i" }}</span>
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <a href="{% url 'accounts:user_profile' comment.user.id %}" class="comment-user">
+                            {{ comment.user.username }}
+                        </a>
+                        <span class="comment-time">
+                            {{ comment.date_added|date:"m-d H:i" }}
+                        </span>
+                    </div>
+                    <div class="comment-text">
+                        {{ comment.text }}
+                    </div>
+                    {% if comment.image %}
+                    <div class="comment-image-container">
+                        <img src="{{ comment.image.url }}" class="comment-image" alt="Comment image">
+                    </div>
+                    {% endif %}
+                    <div class="comment-actions" style="display: flex; gap: 12px; align-items: center;">
+                        {% if user.is_authenticated %}
+                        <a class="action-link"
+                            onclick="openReply('{{ comment.id }}', '{{ comment.user.id }}', '{{ comment.user.username }}')">
+                            回复
+                        </a>
+                        <span
+                            class="action-link like-comment-btn {% if comment.id in liked_comment_ids %}active{% endif %}"
+                            onclick="toggleCommentLike(this, 'comment', '{{ comment.id }}')">
+                            赞 <span class="like-count">{{ comment.like_count }}</span>
+                        </span>
+                        {% else %}
+                        <span class="comment-time" style="font-size: 0.75rem;">赞 {{ comment.like_count }}</span>
+                        {% endif %}
+                    </div>
+
+                    {% if comment.replies.all %}
+                    <div class="replies-container">
+                        {% with all_replies=comment.sorted_replies %}
+                        {% for reply in all_replies %}
+                        <div class="comment-item reply-item-{{ comment.id }}"
+                            style="margin-bottom: 12px; {% if forloop.counter > 2 %}display: none;{% endif %}">
+                            <div class="comment-avatar"
+                                style="width: 24px; height: 24px; font-size: 0.6rem; {% if not reply.user.avatar or reply.user.avatar.name == 'avatars/default.png' %}background-color: {{ reply.user.get_avatar_color }};{% endif %}">
+                                {% if reply.user.avatar and reply.user.avatar.name != 'avatars/default.png' %}
+                                <img src="{{ reply.user.avatar.url }}"
+                                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                {% else %}
+                                {{ reply.user.get_initial }}
+                                {% endif %}
+                            </div>
+                            <div class="comment-content">
+                                <div class="comment-header">
+                                    <a href="{% url 'accounts:user_profile' reply.user.id %}" class="comment-user">
+                                        {{ reply.user.username }}
+                                    </a>
+                                    {% if reply.reply_to %}
+                                    <span style="color: #999; font-size: 0.75rem; margin: 0 4px;">
+                                        回复
+                                    </span>
+                                    <span class="comment-user" style="font-weight: 600; font-size: 0.8rem;">
+                                        @{{ reply.reply_to.username }}
+                                    </span>
+                                    {% endif %}
+                                    <span class="comment-time">
+                                        {{ reply.date_added|date:"m-d H:i" }}
+                                    </span>
+                                </div>
+                                <div class="comment-text">
+                                    {{ reply.text }}
+                                </div>
+                                {% if reply.image %}
+                                <div class="comment-image-container">
+                                    <img src="{{ reply.image.url }}" class="comment-image" alt="Reply image">
+                                </div>
+                                {% endif %}
+                                <div class="comment-actions" style="display: flex; gap: 10px; align-items: center;">
+                                    {% if user.is_authenticated %}
+                                    <a class="action-link"
+                                        onclick="openReply('{{ comment.id }}', '{{ reply.user.id }}', '{{ reply.user.username }}')">
+                                        回复
+                                    </a>
+                                    <span
+                                        class="action-link like-comment-btn {% if reply.id in liked_reply_ids %}active{% endif %}"
+                                        onclick="toggleCommentLike(this, 'reply', '{{ reply.id }}')">
+                                        赞 <span class="like-count">{{ reply.like_count }}</span>
+                                    </span>
+                                    {% else %}
+                                    <span class="comment-time" style="font-size: 0.7rem;">赞 {{ reply.like_count
+                                        }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        {% if all_replies|length > 2 %}
+                        <div class="action-link" id="show-more-btn-{{ comment.id }}"
+                            onclick="toggleReplies('{{ comment.id }}')"
+                            style="margin-top: 8px; font-weight: 700; color: #555; font-size: 0.8rem;">
+                            展开更多 {{ all_replies|length|add:"-2" }} 条回复
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                    {% endif %}
+
+                    <div class="reply-form" id="reply-form-{{ comment.id }}">
+                        <form action="{% url 'blog_context:post_comment' post.id %}" method="post" class="comment-form"
+                            enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" name="parent_comment_id" value="{{ comment.id }}">
+                            <input type="hidden" name="reply_to_user_id" id="reply_to_user_id_{{ comment.id }}"
+                                value="">
+                            <textarea name="text" placeholder="输入回复内容..." required></textarea>
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <label class="file-input-label">
+                                        <input type="file" name="image" accept="image/*" style="display: none;">
+                                        <span>📷</span>
+                                    </label>
+                                    <span id="reply-to-hint-{{ comment.id }}"
+                                        style="font-size: 0.75rem; color: #888;"></span>
+                                </div>
+                                <button type="submit" class="btn-comment" style="padding: 6px 16px; font-size: 0.8rem;">
+                                    发送
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </a>
-
-            <!-- Only show edit button to the author -->
-            {% if user == post.author %}
-            <a href="{% url 'blog_context:edit_post' post.id %}" class="edit-btn-pill">
-                <img src="{% static 'images/icon/编辑2_edit-two.svg' %}" alt="Edit" style="width: 14px; opacity: 0.7;">
-                编辑帖子
-            </a>
-            {% endif %}
+            </div>
+            {% endfor %}
         </div>
-    </header>
+    </section>
+</div>
+{% endblock %}
 
-    <div class="post-body">
-        {% for entry in entries %}
-        <div class="entry-snippet">{{ entry.text }}</div>
-        {% empty %}
-        <p style="color: var(--text-muted); font-style: italic;">暂时还没有详细描述。</p>
-        {% endfor %}
-    </div>
-</article>
+{% block extra_js %}
+<script src="{% static 'images/js/marked.min.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.markdown-content').forEach(function (el) {
+            // Get raw text and parse it into HTML
+            let rawText = el.textContent || el.innerText;
+            el.innerHTML = marked.parse(rawText);
+        });
+    });
+
+    function openReply(p, u, n) {
+        document.querySelectorAll('.reply-form').forEach(f => f.style.display = 'none');
+        const d = document.getElementById(`reply-form-${p}`);
+        const i = document.getElementById(`reply_to_user_id_${p}`);
+        const s = document.getElementById(`reply-to-hint-${p}`);
+        const t = d.querySelector('textarea');
+        d.style.display = 'block';
+        i.value = u;
+        s.innerText = `回复 @${n}`;
+        t.focus();
+    }
+
+    function toggleCommentLike(btn, type, id) {
+        fetch("{% url 'blog_context:toggle_like' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `content_type=${type}&object_id=${id}`
+        }).then(r => r.json()).then(d => {
+            if (d.status === 'success') {
+                btn.querySelector('.like-count').innerText = d.like_count;
+                btn.classList.toggle('active', d.action === 'like');
+            }
+        });
+    }
+
+    function toggleReplies(id) {
+        const replies = document.querySelectorAll(`.reply-item-${id}`);
+        const btn = document.getElementById(`show-more-btn-${id}`);
+        const isHidden = replies[2].style.display === 'none';
+
+        replies.forEach((r, idx) => {
+            if (idx >= 2) r.style.display = isHidden ? 'flex' : 'none';
+        });
+        btn.innerText = isHidden ? '收起回复' : `展开更多 ${replies.length - 2} 条回复`;
+    }
+
+    document.getElementById('likeBtn')?.addEventListener('click', function () {
+        fetch("{% url 'blog_context:toggle_like' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `content_type=article&object_id={{ post.id }}`
+        }).then(r => r.json()).then(d => {
+            if (d.status === 'success') {
+                document.getElementById('likeCount').innerText = d.like_count;
+                this.classList.toggle('active', d.action === 'like');
+            }
+        });
+    });
+    document.getElementById('collectBtn')?.addEventListener('click', function () {
+        fetch("{% url 'blog_context:toggle_collection' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `post_id={{ post.id }}`
+        }).then(r => r.json()).then(d => {
+            if (d.status === 'success') {
+                document.getElementById('collectCount').innerText = d.collection_count;
+                this.classList.toggle('active', d.action === 'collect');
+            }
+        });
+    });
+</script>
 {% endblock %}

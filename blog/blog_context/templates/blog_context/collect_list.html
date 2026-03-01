@@ -1,0 +1,151 @@
+{% extends "blog_context/base.html" %}
+{% load static %}
+
+{% block title %}我的收藏 - 获取，分享一切{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        margin-bottom: 40px;
+        padding: 40px 0;
+        text-align: center;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 850;
+        letter-spacing: -0.05em;
+        margin-bottom: 12px;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+    }
+
+    .post-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
+        padding-bottom: 60px;
+    }
+
+    .post-card {
+        background: white;
+        border: 1px solid var(--card-border);
+        border-radius: 28px;
+        padding: 32px;
+        transition: var(--transition-smooth);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 200px;
+        position: relative;
+        overflow: hidden;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .post-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.08);
+        border-color: #eee;
+    }
+
+    .post-card-title {
+        font-size: 1.4rem;
+        font-weight: 750;
+        line-height: 1.4;
+        margin-bottom: 20px;
+        color: #000;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .post-card-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: auto;
+    }
+
+    .author-mini-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background-color: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.6rem;
+        color: white;
+        font-weight: 800;
+    }
+
+    .author-name {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #555;
+    }
+
+    .collect-date {
+        font-size: 0.75rem;
+        color: #999;
+        margin-left: auto;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 100px 20px;
+        background: #f9f9fb;
+        border-radius: 32px;
+        border: 2px dashed #eee;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">我的收藏</h1>
+    <p class="page-subtitle">你珍藏的所有精彩瞬间同步在此</p>
+</div>
+
+<div class="post-grid">
+    {% for collection in collections %}
+    <a href="{% url 'blog_context:post' collection.post.id %}" class="post-card">
+        <h2 class="post-card-title">{{ collection.post.text }}</h2>
+        <div class="post-card-meta">
+            <div class="author-mini-avatar"
+                style="{% if not collection.post.author.avatar or collection.post.author.avatar.name == 'avatars/default.png' %}background-color: {{ collection.post.author.get_avatar_color }};{% endif %}">
+                {% if collection.post.author.avatar and collection.post.author.avatar.name != 'avatars/default.png' %}
+                <img src="{{ collection.post.author.avatar.url }}"
+                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                {% else %}
+                {{ collection.post.author.get_initial }}
+                {% endif %}
+            </div>
+            <span class="author-name">{{ collection.post.author.username }}</span>
+            <span class="collect-date">收藏于 {{ collection.date_added|date:"Y-m-d" }}</span>
+        </div>
+    </a>
+    {% empty %}
+    <div class="empty-state" style="grid-column: 1 / -1;">
+        <span class="empty-state-icon">📂</span>
+        <h3 style="font-weight: 800; font-size: 1.5rem; margin-bottom: 12px;">目前空空如也</h3>
+        <p style="color: #999; margin-bottom: 32px;">去逛逛广场，发现感兴趣的内容并收藏吧</p>
+        <a href="{% url 'blog_context:posts' %}"
+            style="display: inline-block; padding: 14px 40px; background: #000; color: #fff; border-radius: 100px; text-decoration: none; font-weight: 700; transition: transform 0.3s ease;">
+            去发现
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

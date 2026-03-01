@@ -1,5 +1,5 @@
 from django import forms
-from .models import Title, Context
+from .models import Title, Context, Comment
 
 class TitleForm(forms.ModelForm):
     class Meta:
@@ -11,6 +11,11 @@ class ContextForm(forms.ModelForm):
     """context对应表单"""
     class Meta:
         model = Context
-        fields = ['text']
-        labels = {'text':''}
+        fields = ['text','image']
+        labels = {'text':'','image':''}
 
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['text', 'image']
+        labels = {'text':''}

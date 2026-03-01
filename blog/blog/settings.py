@@ -21,23 +21,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-s^=b5rj!-r5_*oc9g$e&3imcj1_ne(z1rswwz-v-vj)-gtwo17'
+# 从环境变量读取，在 Vercel 面板设置
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-s^=b5rj!-r5_*oc9g$e&3imcj1_ne(z1rswwz-v-vj)-gtwo17')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    'getshare.pages.dev',  # 你的 Cloudflare Pages 免费域名     
-    # '*',  # 测试用，正式部署一定要删掉！
+    'getshare.vercel.app',
+    '.vercel.app',  # 匹配所有 Vercel 预览域名
+    '127.0.0.1',
+    'localhost',
 ]
 
 # ========== 部署核心修改3：安全配置（防跨域/HTTPS） ==========
-# 信任 Cloudflare 的 HTTPS 链接，防止 CSRF 错误
+# 信任 Vercel 的 HTTPS 链接
 CSRF_TRUSTED_ORIGINS = [
-    'https://getshare.pages.dev',  # 和上面的 Pages 域名一致
-    
+    'https://getshare.vercel.app',
+    'https://*.vercel.app',
 ]
-# 仅 HTTPS 传输 Cookie（Cloudflare 开启 HTTPS 后必须）
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
@@ -57,6 +59,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # 静态文件必须在第二位
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -130,13 +133,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / 'blog' / 'static',  # 指向你项目根目录下的static文件夹
+    BASE_DIR / 'blog' / 'static',
 ]
-
-# 2. 新增：部署时收集所有静态文件到这个目录（关键！）
+# 部署时收集所有静态文件到此目录
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+# Whitenoise 压缩静态文件
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # 我的设置
 LOGIN_REDIRECT_URL = 'blog_context:posts'

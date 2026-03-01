@@ -27,3 +27,6 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    # 生产环境：媒体文件在 Vercel 只能临时可用（建议迁移到 Cloudinary）
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

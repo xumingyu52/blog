@@ -24,8 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 从环境变量读取，在 Vercel 面板设置
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-s^=b5rj!-r5_*oc9g$e&3imcj1_ne(z1rswwz-v-vj)-gtwo17')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# 本地开发用 True，Vercel 部署自动读取 DEBUG=False
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = [
     'getshare.vercel.app',
@@ -139,8 +139,10 @@ STATICFILES_DIRS = [
 ]
 # 部署时收集所有静态文件到此目录
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-# Whitenoise 压缩静态文件
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Whitenoise 压缩静态文件（仅在生产环境启用）
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # 我的设置
 LOGIN_REDIRECT_URL = 'blog_context:posts'

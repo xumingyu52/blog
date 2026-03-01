@@ -144,6 +144,10 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 if not DEBUG:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# 在 Vercel 上 DEBUG 默认为 True unless you explicitly set it in the
+# project’s Environment Variables. 产线部署必须把 DEBUG=False 否则
+#静态/媒体路径、缓存和安全设置不会生效。
+
 # 我的设置
 LOGIN_REDIRECT_URL = 'blog_context:posts'
 LOGOUT_REDIRECT_URL = 'blog_context:posts'
@@ -154,3 +158,20 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 MEDIA_ROOT = BASE_DIR / 'media'
 # 媒体文件访问URL：前端通过 /media/avatars/2026/02/26/xxx.png 访问头像
 MEDIA_URL = '/media/'
+
+# ⚠️ Vercel 不会保留部署期间生成的本地文件。任何用户上传
+# 内容如果写到 MEDIA_ROOT（例如头像、评论图片、文章配图）
+# 在下一次构建或在函数休眠后就会消失，这就是线上“图片不显示”的
+# 根源。生产环境的媒体请交由外部对象存储（Cloudinary、S3 等），
+# 并在 settings.py 里设置相应的 DEFAULT_FILE_STORAGE。例如：
+#
+# if not DEBUG:
+#     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+#     CLOUDINARY_STORAGE = {
+#         'CLOUD_NAME': os.environ['CLOUDINARY_CLOUD_NAME'],
+#         'API_KEY': os.environ['CLOUDINARY_API_KEY'],
+#         'API_SECRET': os.environ['CLOUDINARY_API_SECRET'],
+#     }
+#
+# 或者把 MEDIA_URL 指向你自己的 CDN。只要不依赖本地 media/ 目录，
+# 静态图片才能在 Vercel 部署时持续有效。

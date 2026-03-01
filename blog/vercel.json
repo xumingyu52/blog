@@ -1,6 +1,7 @@
 {
     "buildCommand": "pip install --break-system-packages -r requirements.txt && python manage.py collectstatic --noinput",
     "installCommand": "pip install --break-system-packages -r requirements.txt",
+    "outputDirectory": "staticfiles",
     "routes": [
         {            "src": "\/static\/(.*)",
             "dest": "/static/$1"

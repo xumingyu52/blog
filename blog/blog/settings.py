@@ -24,10 +24,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-s^=b5rj!-r5_*oc9g$e&3imcj1_ne(z1rswwz-v-vj)-gtwo17'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'getshare.pages.dev',  # 你的 Cloudflare Pages 免费域名     
+    # '*',  # 测试用，正式部署一定要删掉！
+]
 
+# ========== 部署核心修改3：安全配置（防跨域/HTTPS） ==========
+# 信任 Cloudflare 的 HTTPS 链接，防止 CSRF 错误
+CSRF_TRUSTED_ORIGINS = [
+    'https://getshare.pages.dev',  # 和上面的 Pages 域名一致
+    
+]
+# 仅 HTTPS 传输 Cookie（Cloudflare 开启 HTTPS 后必须）
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 # Application definition
 
@@ -123,7 +135,8 @@ STATICFILES_DIRS = [
     BASE_DIR / 'blog' / 'static',  # 指向你项目根目录下的static文件夹
 ]
 
-
+# 2. 新增：部署时收集所有静态文件到这个目录（关键！）
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # 我的设置
 LOGIN_REDIRECT_URL = 'blog_context:posts'

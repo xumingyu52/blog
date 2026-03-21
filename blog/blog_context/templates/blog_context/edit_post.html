@@ -216,6 +216,9 @@
     });
 
     // 提交时绑定 HTML
+    if (textarea) {
+        textarea.removeAttribute("required");
+    }
     document.getElementById("post-form").onsubmit = function () {
         textarea.value = quill.root.innerHTML;
     };

@@ -201,8 +201,14 @@
     });
 
     // 提交时绑定 HTML
+    var contextTextarea = document.getElementById("id_context-text");
+    if (contextTextarea) {
+        contextTextarea.removeAttribute("required");
+    }
     document.getElementById("post-form").onsubmit = function () {
-        document.getElementById("id_context-text").value = quill.root.innerHTML;
+        if (contextTextarea) {
+            contextTextarea.value = quill.root.innerHTML;
+        }
     };
 
     // 文件上传处理

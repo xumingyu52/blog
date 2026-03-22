@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-s^=b5rj!-r5_*oc9g$e&3imcj1_ne(z1rswwz-v-vj)-gtwo17'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -122,6 +122,8 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'blog' / 'static',  # 指向你项目根目录下的static文件夹
 ]
+#指向collectstatic收集后的文件夹
+STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
 
 
 

@@ -254,6 +254,33 @@
     .m-reply-name { font-size: 12px; font-weight: 800; color: #333; }
     .m-reply-to { font-size: 12px; color: #aaa; }
     .m-reply-text { font-size: 13px; line-height: 1.45; color: #444; margin: 3px 0; }
+    .m-reply-form-wrap {
+        margin-top: 8px;
+        padding: 8px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border-left: 2px solid #e0e0e0;
+    }
+    .m-reply-textarea {
+        width: 100%;
+        border: 1px solid #e8e8e8;
+        border-radius: 6px;
+        padding: 6px 8px;
+        font-size: 13px;
+        min-height: 50px;
+        outline: none;
+        font-family: inherit;
+        background: #fff;
+        resize: none;
+        line-height: 1.4;
+    }
+    .m-reply-textarea:focus { border-color: #000; }
+    .m-reply-form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 6px;
+    }
 </style>
 {% endblock %}
 
@@ -358,11 +385,30 @@
                     </button>
                     {% if user.is_authenticated %}
                     <button class="m-comment-reply-btn"
-                        onclick="triggerReply('{{ comment.id }}', '{{ comment.user.id }}', '{{ comment.user.username }}')">
+                        onclick="toggleReplyForm('comment-form-{{ comment.id }}')">
                         回复
                     </button>
                     {% endif %}
                 </div>
+                
+                <!-- Comment Reply Form -->
+                {% if user.is_authenticated %}
+                <div class="m-reply-form-wrap" id="comment-form-{{ comment.id }}" style="display: none;">
+                    <form action="{% url 'blog_context:post_comment' post.id %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="parent_comment_id" value="{{ comment.id }}">
+                        <input type="hidden" name="reply_to_user_id" value="{{ comment.user.id }}">
+                        <textarea name="text" class="m-reply-textarea" placeholder="回复 {{ comment.user.username }}..." required></textarea>
+                        <div class="m-reply-form-actions">
+                            <label class="m-photo-btn">
+                                📷
+                                <input type="file" name="image" accept="image/*" style="display:none;">
+                            </label>
+                            <button type="submit" class="m-submit-btn">回复</button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
                 
                 <!-- Replies -->
                 {% if comment.replies.exists %}
@@ -392,11 +438,30 @@
                                 </button>
                                 {% if user.is_authenticated %}
                                 <button class="m-comment-reply-btn"
-                                    onclick="triggerReply('{{ comment.id }}', '{{ reply.user.id }}', '{{ reply.user.username }}')">
+                                    onclick="toggleReplyForm('reply-form-{{ reply.id }}')">
                                     回复
                                 </button>
                                 {% endif %}
                             </div>
+                            
+                            <!-- Reply Form -->
+                            {% if user.is_authenticated %}
+                            <div class="m-reply-form-wrap" id="reply-form-{{ reply.id }}" style="display: none;">
+                                <form action="{% url 'blog_context:post_comment' post.id %}" method="post" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="parent_comment_id" value="{{ comment.id }}">
+                                    <input type="hidden" name="reply_to_user_id" value="{{ reply.user.id }}">
+                                    <textarea name="text" class="m-reply-textarea" placeholder="回复 {{ reply.user.username }}..." required></textarea>
+                                    <div class="m-reply-form-actions">
+                                        <label class="m-photo-btn">
+                                            📷
+                                            <input type="file" name="image" accept="image/*" style="display:none;">
+                                        </label>
+                                        <button type="submit" class="m-submit-btn">回复</button>
+                                    </div>
+                                </form>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}
@@ -466,21 +531,18 @@
     }
     
     // Reply functionality
-    function triggerReply(commentId, userId, username) {
-        document.getElementById('parentCommentId').value = commentId;
-        document.getElementById('replyToUserId').value = userId;
-        document.getElementById('replyTargetName').innerText = username;
-        document.getElementById('replyBanner').style.display = 'flex';
-        document.getElementById('commentText').placeholder = `回复 ${username}...`;
-        document.getElementById('commentText').focus();
-        document.getElementById('commentForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    
-    function cancelReply() {
-        document.getElementById('parentCommentId').value = '';
-        document.getElementById('replyToUserId').value = '';
-        document.getElementById('replyBanner').style.display = 'none';
-        document.getElementById('commentText').placeholder = '发表评论...';
+    function toggleReplyForm(formId) {
+        const form = document.getElementById(formId);
+        const isVisible = form.style.display !== 'none';
+        
+        // Hide all reply forms first
+        document.querySelectorAll('.m-reply-form-wrap').forEach(f => f.style.display = 'none');
+        
+        // Show the clicked one if it was hidden
+        if (!isVisible) {
+            form.style.display = 'block';
+            form.querySelector('.m-reply-textarea').focus();
+        }
     }
 </script>
 {% endblock %}

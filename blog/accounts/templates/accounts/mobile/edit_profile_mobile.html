@@ -1,0 +1,194 @@
+{% extends "blog_context/mobile/base_mobile.html" %}
+{% load static %}
+
+{% block title %}编辑个人资料 - 手机端{% endblock %}
+
+{% block m_css %}
+<style>
+    .m-edit-hero {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 24px 0 28px;
+        margin-bottom: 4px;
+    }
+    .m-edit-avatar-wrap {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        flex-shrink: 0;
+    }
+    .m-edit-avatar-img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #fff;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    .m-edit-badge {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 26px;
+        height: 26px;
+        background: #000;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    .m-edit-badge img { width: 12px; filter: invert(1); }
+    .m-edit-title { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; }
+    .m-edit-subtitle { font-size: 13px; color: var(--m-muted); margin-top: 3px; }
+    
+    .m-form-card {
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 20px;
+        padding: 24px 20px;
+        margin-bottom: 16px;
+    }
+    .m-form-card-title {
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--m-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 20px;
+    }
+    .m-form-field {
+        margin-bottom: 20px;
+    }
+    .m-form-field:last-child { margin-bottom: 0; }
+    .m-form-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #888;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .m-form-input {
+        width: 100%;
+        border: none;
+        border-bottom: 2px solid #eee;
+        padding: 8px 0;
+        font-size: 16px;
+        font-family: inherit;
+        outline: none;
+        background: transparent;
+        transition: border-color 0.2s;
+    }
+    .m-form-input:focus { border-color: #000; }
+    .m-form-error { font-size: 12px; color: #ff4444; margin-top: 4px; }
+    
+    .m-save-btn {
+        width: 100%;
+        height: 52px;
+        border-radius: 14px;
+        font-size: 16px;
+        font-weight: 800;
+        margin-top: 8px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+    .m-back-link {
+        display: block;
+        text-align: center;
+        margin-top: 16px;
+        font-size: 14px;
+        color: var(--m-muted);
+        font-weight: 600;
+    }
+    .m-password-link {
+        display: block;
+        text-align: center;
+        margin-top: 10px;
+        font-size: 14px;
+        color: #ff4444;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" id="profileForm">
+    {% csrf_token %}
+    
+    <!-- Hero: Avatar + Title -->
+    <div class="m-edit-hero">
+        <label for="id_avatar" class="m-edit-avatar-wrap" title="点击更换头像">
+            <div id="avatarPreviewContainer">
+                {% if user.avatar and user.avatar.name != 'avatars/default.png' %}
+                <img src="{{ user.avatar.url }}" alt="" class="m-edit-avatar-img" id="previewImg">
+                {% else %}
+                <div class="m-edit-avatar-img" id="previewInitial"
+                    style="background-color: {{ user.get_avatar_color }}; display:flex; align-items:center; justify-content:center; color:#fff; font-size:2rem; font-weight:800;">
+                    {{ user.get_initial }}
+                </div>
+                {% endif %}
+            </div>
+            <div class="m-edit-badge">
+                <img src="{% static 'images/icon/编辑2_edit-two.svg' %}" alt="">
+            </div>
+            <!-- Hidden actual avatar input -->
+            <div style="display:none;">{{ form.avatar }}</div>
+        </label>
+        <div>
+            <h1 class="m-edit-title">编辑个人资料</h1>
+            <p class="m-edit-subtitle">点击头像可更换</p>
+        </div>
+    </div>
+    
+    <!-- Info fields -->
+    <div class="m-form-card">
+        <p class="m-form-card-title">基本信息</p>
+        
+        <div class="m-form-field">
+            <label class="m-form-label" for="{{ form.username.id_for_label }}">用户名</label>
+            <input type="text" name="username" id="{{ form.username.id_for_label }}"
+                value="{{ form.username.value|default:'' }}"
+                class="m-form-input" placeholder="你的用户名" maxlength="150">
+            {% if form.username.errors %}
+            <p class="m-form-error">{{ form.username.errors.0 }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="m-form-field">
+            <label class="m-form-label" for="{{ form.email.id_for_label }}">邮箱</label>
+            <input type="email" name="email" id="{{ form.email.id_for_label }}"
+                value="{{ form.email.value|default:'' }}"
+                class="m-form-input" placeholder="你的邮箱地址">
+            {% if form.email.errors %}
+            <p class="m-form-error">{{ form.email.errors.0 }}</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <button type="submit" class="m-btn m-save-btn">保存更改</button>
+    <a href="{% url 'accounts:user_profile' user.id %}" class="m-back-link">取消并返回</a>
+    <a href="{% url 'accounts:password_change' %}" class="m-password-link">修改账户密码</a>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const avatarInput = document.getElementById('id_avatar');
+    const container = document.getElementById('avatarPreviewContainer');
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    container.innerHTML = `<img src="${e.target.result}" class="m-edit-avatar-img">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+</script>
+{% endblock %}

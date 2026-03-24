@@ -1,0 +1,186 @@
+{% extends "blog_context/mobile/base_mobile.html" %}
+
+{% block title %}{{ profile_user.username }} 的资料 - 手机端{% endblock %}
+
+{% block m_css %}
+<style>
+    /* ---- Profile Header ---- */
+    .m-profile-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 20px 0;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 24px;
+    }
+    .m-avatar-box {
+        width: 60px;
+        height: 60px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+    .m-avatar-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .m-avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 24px;
+        font-weight: 800;
+    }
+    
+    /* Right column: username row + email + actions all stacked */
+    .m-profile-right {
+        flex: 1;
+        min-width: 0;
+    }
+    /* Username + action buttons on the SAME row */
+    .m-profile-name-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 2px;
+    }
+    .m-profile-name {
+        font-size: 17px;
+        font-weight: 800;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .m-profile-actions {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+    .m-action-btn {
+        height: 28px;
+        padding: 0 12px;
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+    }
+    .m-action-btn-primary { background: #000; color: #fff; }
+    .m-action-btn-secondary { background: #f0f0f0; color: #555; border: none; cursor: pointer; }
+    
+    .m-profile-email {
+        font-size: 12px;
+        color: var(--m-muted);
+        margin-bottom: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* ---- Collect Link ---- */
+    .m-collect-link {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: #f9f9f9;
+        border: 1px solid #eee;
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 24px;
+        transition: background 0.2s;
+    }
+    .m-collect-link:active { background: #f0f0f0; }
+    
+    /* ---- Post List ---- */
+    .m-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+    .m-section-title { font-size: 15px; font-weight: 800; }
+    
+    .m-profile-post-card {
+        padding: 14px 0;
+        border-bottom: 1px solid #f5f5f5;
+        display: block;
+    }
+    .m-profile-post-card:active { opacity: 0.6; }
+    .m-profile-post-title { font-size: 15px; font-weight: 700; color: #111; line-height: 1.35; }
+    .m-profile-post-date { font-size: 11px; color: var(--m-muted); margin-top: 4px; }
+    
+    .m-empty-state {
+        padding: 80px 0;
+        text-align: center;
+        color: var(--m-muted);
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- === Profile Header === -->
+<div class="m-profile-header">
+    <div class="m-avatar-box">
+        {% if profile_user.avatar and profile_user.avatar.name != 'avatars/default.png' %}
+        <img src="{{ profile_user.avatar.url }}" alt="{{ profile_user.username }}">
+        {% else %}
+        <div class="m-avatar-placeholder" style="background-color: {{ profile_user.get_avatar_color }};">
+            {{ profile_user.get_initial }}
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="m-profile-right">
+        <!-- Username and buttons on the same row -->
+        <div class="m-profile-name-row">
+            <h1 class="m-profile-name">{{ profile_user.username }}</h1>
+            {% if user == profile_user %}
+            <div class="m-profile-actions">
+                <a href="{% url 'accounts:edit_profile' %}" class="m-action-btn m-action-btn-primary">编辑</a>
+                <form action="{% url 'accounts:logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="m-action-btn m-action-btn-secondary">退出</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        <p class="m-profile-email">{{ profile_user.email|default:"TA 还没有设置公开邮箱" }}</p>
+    </div>
+</div>
+
+<!-- === Collections entry (only for own profile) === -->
+{% if user == profile_user %}
+<a href="{% url 'blog_context:collect_list' %}" class="m-collect-link">
+    <span>📂</span>
+    <span>我的收藏</span>
+    <span style="margin-left: auto; color: #ccc;">›</span>
+</a>
+{% endif %}
+
+<!-- === Post List === -->
+<div class="m-section-header">
+    <h2 class="m-section-title">发布过的共享 ({{ user_posts|length }})</h2>
+</div>
+
+<div>
+    {% for post in user_posts %}
+    <a href="{% url 'blog_context:post' post.id %}" class="m-profile-post-card">
+        <h3 class="m-profile-post-title">{{ post.text }}</h3>
+        <div class="m-profile-post-date">{{ post.date_added|date:"Y-m-d" }}</div>
+    </a>
+    {% empty %}
+    <div class="m-empty-state">暂无发布内容</div>
+    {% endfor %}
+</div>
+{% endblock %}

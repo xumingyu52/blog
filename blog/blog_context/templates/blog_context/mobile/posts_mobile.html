@@ -1,0 +1,148 @@
+{% extends "blog_context/mobile/base_mobile.html" %}
+{% load static %}
+
+{% block title %}全部帖子 - 手机端{% endblock %}
+
+{% block m_css %}
+<style>
+    /* Page header */
+    .m-page-header {
+        padding: 16px 0 12px;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .m-page-title { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; }
+    .m-count-badge {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--m-muted);
+        background: #f5f5f5;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+    
+    /* Post card */
+    .m-post-card {
+        display: block;
+        padding: 16px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .m-post-card:active { opacity: 0.6; }
+    .m-post-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+    .m-post-author {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+    .m-post-avatar {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-size: cover;
+        background-position: center;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 9px;
+        font-weight: 800;
+    }
+    .m-post-author-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: #555;
+    }
+    .m-post-date {
+        font-size: 12px;
+        color: var(--m-muted);
+    }
+    .m-post-title {
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.3;
+        color: #111;
+        margin-bottom: 6px;
+    }
+    .m-post-excerpt {
+        font-size: 14px;
+        color: #777;
+        line-height: 1.45;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    /* FAB */
+    .m-fab-label {
+        position: fixed;
+        bottom: 20px;
+        right: 16px;
+        background: #000;
+        color: #fff;
+        height: 44px;
+        padding: 0 20px;
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 800;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        z-index: 999;
+    }
+    .m-fab-label img { width: 16px; filter: invert(1); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="m-page-header">
+    <h1 class="m-page-title">全部帖子</h1>
+    <span class="m-count-badge">{{ posts|length }} 条</span>
+</div>
+<br>
+<div class="m-post-list" style="padding-bottom: 80px;">
+    {% for post in posts %}
+    <a href="{% url 'blog_context:post' post.id %}" class="m-post-card">
+        <div class="m-post-meta">
+            <div class="m-post-author">
+                <div class="m-post-avatar"
+                    style="{% if not post.author.avatar or post.author.avatar.name == 'avatars/default.png' %}background-color: {{ post.author.get_avatar_color }};{% else %}background-image: url('{{ post.author.avatar.url }}');{% endif %}">
+                    {% if not post.author.avatar or post.author.avatar.name == 'avatars/default.png' %}
+                    {{ post.author.get_initial }}
+                    {% endif %}
+                </div>
+                <span class="m-post-author-name">{{ post.author.username }}</span>
+            </div>
+            <span class="m-post-date">{{ post.date_added|date:"m-d" }}</span>
+        </div>
+        <h2 class="m-post-title">{{ post.text }}</h2>
+        <p class="m-post-excerpt">
+            {% with first_entry=post.context_set.first %}
+            {% if first_entry %}{{ first_entry.text|striptags|truncatechars:80 }}{% else %}探索发现中...{% endif %}
+            {% endwith %}
+        </p>
+    </a>
+    {% empty %}
+    <div style="padding: 80px 0; text-align: center; color: var(--m-muted); font-size: 14px;">
+        暂无帖子，快来发布第一条吧！
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block fixed_elements %}
+<a href="{% url 'blog_context:new_post' %}" class="m-fab-label">
+    <img src="{% static 'images/icon/添加_add-one.svg' %}" alt="">
+    <span>发帖</span>
+</a>
+{% endblock %}

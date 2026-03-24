@@ -11,9 +11,16 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 # Create your views here.
 
+def is_mobile(request):
+    """检测是否为移动设备"""
+    user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+    mobile_keywords = ['mobile', 'android', 'iphone', 'ipad', 'phone']
+    return any(k in user_agent for k in mobile_keywords)
+
 def index(request):
     """论坛主页"""
-    return render(request, 'blog_context/index.html')
+    template = 'blog_context/mobile/index_mobile.html' if is_mobile(request) else 'blog_context/index.html'
+    return render(request, template)
 
 def posts(request):
     """帖子展示"""
@@ -21,7 +28,8 @@ def posts(request):
     # 传递帖子直属用户
     
     context = {'posts': posts}
-    return render(request, 'blog_context/posts.html', context)
+    template = 'blog_context/mobile/posts_mobile.html' if is_mobile(request) else 'blog_context/posts.html'
+    return render(request, template, context)
 
 def post(request, post_id):
     """帖子内容全部展示，包含评论和点赞交互"""
@@ -60,7 +68,8 @@ def post(request, post_id):
         'liked_comment_ids': liked_comment_ids,
         'liked_reply_ids': liked_reply_ids,
     }
-    return render(request, 'blog_context/post_content.html', context)
+    template = 'blog_context/mobile/post_content_mobile.html' if is_mobile(request) else 'blog_context/post_content.html'
+    return render(request, template, context)
 
 @login_required
 def new_post(request):
@@ -86,7 +95,8 @@ def new_post(request):
         'title_form': title_form,
         'context_form': context_form,
     }
-    return render(request, 'blog_context/new_post.html', context)
+    template = 'blog_context/mobile/new_post_mobile.html' if is_mobile(request) else 'blog_context/new_post.html'
+    return render(request, template, context)
 
 @login_required
 def edit_post(request, post_id):
@@ -183,7 +193,8 @@ def post_comment(request, post_id):
 def collect_list(request):
     """收藏列表"""
     collections = Collection.objects.filter(user=request.user)
-    return render(request, 'blog_context/collect_list.html', {'collections': collections})
+    template = 'blog_context/mobile/collect_list_mobile.html' if is_mobile(request) else 'blog_context/collect_list.html'
+    return render(request, template, {'collections': collections})
 
 @login_required
 def upload_image(request):

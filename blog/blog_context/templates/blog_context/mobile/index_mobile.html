@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>获取，分享一切</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { 
+            background: #fff; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden;
+        }
+        .m-logo-top {
+            position: absolute;
+            top: 30px;
+            left: 20px;
+            height: 24px;
+        }
+        .m-hero {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+        }
+        .m-bg-icon {
+            position: absolute;
+            width: 140%;
+            max-width: 500px;
+            opacity: 0.9;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .m-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 40px;
+            color: #000;
+            letter-spacing: -1px;
+        }
+        .m-enter-btn {
+            background: #000;
+            color: #fff;
+            padding: 16px 40px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <img src="{% static 'images/logo/img1.png' %}" alt="Logo" class="m-logo-top">
+    
+    <img src="{% static 'images/获取，分享一切-2.png' %}" class="m-bg-icon" alt="">
+    
+    <div class="m-hero">
+        <h1 class="m-title">获取，分享一切</h1>
+        <a href="{% url 'accounts:login' %}" class="m-enter-btn">进入论坛</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,101 @@
+{% extends "blog_context/mobile/base_mobile.html" %}
+
+{% block title %}我的收藏 - 手机端{% endblock %}
+
+{% block m_css %}
+<style>
+    .m-page-header {
+        padding: 16px 0 14px;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 20px;
+    }
+    .m-page-title { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; }
+    .m-page-subtitle { font-size: 13px; color: var(--m-muted); margin-top: 3px; }
+    
+    .m-collect-card {
+        display: block;
+        padding: 16px;
+        border: 1px solid #f0f0f0;
+        border-radius: 16px;
+        margin-bottom: 12px;
+        background: #fff;
+        transition: background 0.15s;
+    }
+    .m-collect-card:active { background: #f9f9f9; }
+    .m-collect-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: #111;
+        line-height: 1.35;
+        margin-bottom: 12px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .m-collect-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .m-mini-avatar {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 9px;
+        font-weight: 800;
+    }
+    .m-mini-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .m-collect-author { font-size: 12px; font-weight: 700; color: #666; }
+    .m-collect-date { font-size: 11px; color: var(--m-muted); margin-left: auto; }
+    
+    .m-empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        border: 2px dashed #eee;
+        border-radius: 20px;
+        margin-top: 20px;
+    }
+    .m-empty-icon { font-size: 48px; margin-bottom: 16px; }
+    .m-empty-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+    .m-empty-sub { font-size: 13px; color: var(--m-muted); margin-bottom: 28px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="m-page-header">
+    <h1 class="m-page-title">我的收藏</h1>
+    <p class="m-page-subtitle">你珍藏的所有精彩瞬间</p>
+</div>
+
+{% for collection in collections %}
+<a href="{% url 'blog_context:post' collection.post.id %}" class="m-collect-card">
+    <h2 class="m-collect-title">{{ collection.post.text }}</h2>
+    <div class="m-collect-meta">
+        <div class="m-mini-avatar"
+            style="{% if not collection.post.author.avatar or collection.post.author.avatar.name == 'avatars/default.png' %}background-color: {{ collection.post.author.get_avatar_color }};{% endif %}">
+            {% if collection.post.author.avatar and collection.post.author.avatar.name != 'avatars/default.png' %}
+            <img src="{{ collection.post.author.avatar.url }}" alt="">
+            {% else %}
+            {{ collection.post.author.get_initial }}
+            {% endif %}
+        </div>
+        <span class="m-collect-author">{{ collection.post.author.username }}</span>
+        <span class="m-collect-date">{{ collection.date_added|date:"m-d" }}</span>
+    </div>
+</a>
+{% empty %}
+<div class="m-empty-state">
+    <div class="m-empty-icon">📂</div>
+    <h3 class="m-empty-title">目前空空如也</h3>
+    <p class="m-empty-sub">去逛逛广场，发现感兴趣的内容并收藏吧</p>
+    <a href="{% url 'blog_context:posts' %}" class="m-btn" style="height: 44px; border-radius: 22px; padding: 0 28px;">去发现</a>
+</div>
+{% endfor %}
+{% endblock %}

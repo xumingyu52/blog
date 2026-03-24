@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}获取，分享一切{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --m-bg: #fff;
+            --m-text: #111;
+            --m-muted: #888;
+            --m-border: #eee;
+            --m-accent: #000;
+            --nav-h: 50px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Outfit', 'Noto Sans SC', sans-serif; 
+            background: var(--m-bg); 
+            color: var(--m-text);
+            line-height: 1.4;
+            font-size: 15px;
+        }
+        a { text-decoration: none; color: inherit; }
+        .m-nav {
+            height: var(--nav-h);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--m-border);
+        }
+        .m-logo { height: 20px; }
+        .m-user-icon { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+        .m-container { padding: 16px 20px; }
+        .m-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 36px;
+            padding: 0 16px;
+            background: var(--m-accent);
+            color: #fff;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+        }
+        .m-input {
+            width: 100%;
+            border: 1px solid var(--m-border);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+        }
+        .m-input:focus { border-color: var(--m-accent); }
+        .m-footer {
+            padding: 30px 12px;
+            text-align: center;
+            font-size: 11px;
+            color: var(--m-muted);
+            border-top: 1px solid var(--m-border);
+            margin-top: 40px;
+        }
+        .m-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            background: var(--m-accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 999;
+        }
+        .m-fab img { width: 20px; filter: invert(1); }
+        {% block m_css %}{% endblock %}
+    </style>
+</head>
+<body>
+    <nav class="m-nav">
+        <a href="{% url 'blog_context:posts' %}">
+            <img src="{% static 'images/logo/img1.png' %}" alt="Logo" class="m-logo">
+        </a>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            {% if user.is_authenticated %}
+            <a href="{% url 'accounts:user_profile' user.id %}">
+                {% if user.avatar and user.avatar.name != 'avatars/default.png' %}
+                <img src="{{ user.avatar.url }}" alt="" class="m-user-icon">
+                {% else %}
+                <div style="width: 24px; height: 24px; border-radius: 50%; background: {{ user.get_avatar_color }}; color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800;">
+                    {{ user.get_initial }}
+                </div>
+                {% endif %}
+            </a>
+            {% else %}
+            <a href="{% url 'accounts:login' %}" style="font-size: 13px; font-weight: 600;">登录</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="m-container">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block fixed_elements %}{% endblock %}
+
+    <footer class="m-footer">
+        &copy; 2024 PRESERVE & SHARE
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

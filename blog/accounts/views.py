@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from blog_context.models import Title
 from .models import CustomUser
+from blog_context.views import is_mobile
 
 def register(request):
     if request.method == 'POST':
@@ -32,7 +33,8 @@ def user_login(request):
                 return redirect('blog_context:posts')
     else:
         form = AuthenticationForm()
-    return render(request, 'accounts/login.html', {'form': form})
+    template = 'accounts/mobile/login_mobile.html' if is_mobile(request) else 'accounts/login.html'
+    return render(request, template, {'form': form})
 
 @login_required
 def edit_profile(request):
@@ -44,7 +46,8 @@ def edit_profile(request):
             return redirect('accounts:user_profile', user_id=request.user.id)
     else:
         form = CustomUserChangeForm(instance=request.user)
-    return render(request, 'accounts/edit_profile.html', {'form': form})
+    template = 'accounts/mobile/edit_profile_mobile.html' if is_mobile(request) else 'accounts/edit_profile.html'
+    return render(request, template, {'form': form})
 
 @login_required
 def change_password(request):
@@ -57,7 +60,8 @@ def change_password(request):
             return redirect('accounts:user_profile', user_id=request.user.id)
     else:
         form = CustomPasswordChangeForm(request.user)
-    return render(request, 'accounts/change_password.html', {'form': form})
+    template = 'accounts/mobile/change_password_mobile.html' if is_mobile(request) else 'accounts/change_password.html'
+    return render(request, template, {'form': form})
 
 def user_profile(request, user_id):
     profile_user = get_object_or_404(CustomUser, id=user_id)
@@ -66,4 +70,5 @@ def user_profile(request, user_id):
         'profile_user': profile_user,
         'user_posts': user_posts,
     }
-    return render(request, 'accounts/profile.html', context)
+    template = 'accounts/mobile/profile_mobile.html' if is_mobile(request) else 'accounts/profile.html'
+    return render(request, template, context)

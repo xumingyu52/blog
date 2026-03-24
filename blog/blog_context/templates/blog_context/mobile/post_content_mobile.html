@@ -148,6 +148,57 @@
         border: none;
         background: none;
     }
+    .m-photo-btn:hover { opacity: 1; }
+    .m-image-preview {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .m-preview-item {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #e0e0e0;
+    }
+    .m-preview-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .m-preview-remove {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        border: none;
+        font-size: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .m-upload-status {
+        margin-top: 6px;
+        font-size: 12px;
+        color: #666;
+        display: none;
+    }
+    .m-upload-status.uploading {
+        color: #ff6b35;
+    }
+    .m-upload-status.success {
+        color: #4caf50;
+    }
+    .m-upload-status.error {
+        color: #f44336;
+    }
     .m-submit-btn {
         height: 34px;
         padding: 0 18px;
@@ -347,10 +398,12 @@
             
             <textarea name="text" class="m-comment-textarea" id="commentText"
                 placeholder="发表评论..." required></textarea>
+            <div class="m-image-preview" id="comment-preview"></div>
+            <div class="m-upload-status" id="comment-status">正在上传图片...</div>
             <div class="m-comment-form-actions">
                 <label class="m-photo-btn">
                     📷
-                    <input type="file" name="image" accept="image/*" style="display:none;">
+                    <input type="file" name="image" accept="image/*" style="display:none;" onchange="handleImageSelect(this, 'comment')">
                 </label>
                 <button type="submit" class="m-submit-btn">发表</button>
             </div>
@@ -399,10 +452,12 @@
                         <input type="hidden" name="parent_comment_id" value="{{ comment.id }}">
                         <input type="hidden" name="reply_to_user_id" value="{{ comment.user.id }}">
                         <textarea name="text" class="m-reply-textarea" placeholder="回复 {{ comment.user.username }}..." required></textarea>
+                        <div class="m-image-preview" id="comment-reply-preview-{{ comment.id }}"></div>
+                        <div class="m-upload-status" id="comment-reply-status-{{ comment.id }}">正在上传图片...</div>
                         <div class="m-reply-form-actions">
                             <label class="m-photo-btn">
                                 📷
-                                <input type="file" name="image" accept="image/*" style="display:none;">
+                                <input type="file" name="image" accept="image/*" style="display:none;" onchange="handleImageSelect(this, 'comment-reply-{{ comment.id }}')">
                             </label>
                             <button type="submit" class="m-submit-btn">回复</button>
                         </div>
@@ -452,10 +507,12 @@
                                     <input type="hidden" name="parent_comment_id" value="{{ comment.id }}">
                                     <input type="hidden" name="reply_to_user_id" value="{{ reply.user.id }}">
                                     <textarea name="text" class="m-reply-textarea" placeholder="回复 {{ reply.user.username }}..." required></textarea>
+                                    <div class="m-image-preview" id="reply-preview-{{ reply.id }}"></div>
+                                    <div class="m-upload-status" id="reply-status-{{ reply.id }}">正在上传图片...</div>
                                     <div class="m-reply-form-actions">
                                         <label class="m-photo-btn">
                                             📷
-                                            <input type="file" name="image" accept="image/*" style="display:none;">
+                                            <input type="file" name="image" accept="image/*" style="display:none;" onchange="handleImageSelect(this, 'reply-{{ reply.id }}')">
                                         </label>
                                         <button type="submit" class="m-submit-btn">回复</button>
                                     </div>
@@ -543,6 +600,69 @@
             form.style.display = 'block';
             form.querySelector('.m-reply-textarea').focus();
         }
+    }
+    
+    // Image handling
+    function handleImageSelect(input, formId) {
+        const file = input.files[0];
+        if (!file) return;
+        
+        // Build correct IDs based on formId
+        let previewId, statusId;
+        if (formId === 'comment') {
+            previewId = 'comment-preview';
+            statusId = 'comment-status';
+        } else if (formId.startsWith('comment-reply-')) {
+            previewId = `comment-reply-preview-${formId.split('-')[2]}`;
+            statusId = `comment-reply-status-${formId.split('-')[2]}`;
+        } else if (formId.startsWith('reply-')) {
+            previewId = `reply-preview-${formId.split('-')[1]}`;
+            statusId = `reply-status-${formId.split('-')[1]}`;
+        }
+        
+        const previewContainer = document.getElementById(previewId);
+        const statusElement = document.getElementById(statusId);
+        
+        // Show uploading status
+        statusElement.style.display = 'block';
+        statusElement.className = 'm-upload-status uploading';
+        statusElement.textContent = '正在上传图片...';
+        
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Clear previous preview
+            previewContainer.innerHTML = '';
+            
+            // Create preview item
+            const previewItem = document.createElement('div');
+            previewItem.className = 'm-preview-item';
+            
+            const img = document.createElement('img');
+            img.className = 'm-preview-img';
+            img.src = e.target.result;
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'm-preview-remove';
+            removeBtn.textContent = '×';
+            removeBtn.onclick = function() {
+                previewContainer.innerHTML = '';
+                input.value = '';
+                statusElement.style.display = 'none';
+            };
+            
+            previewItem.appendChild(img);
+            previewItem.appendChild(removeBtn);
+            previewContainer.appendChild(previewItem);
+            
+            // Simulate upload completion
+            setTimeout(() => {
+                statusElement.className = 'm-upload-status success';
+                statusElement.textContent = '图片已选择，提交时将上传';
+            }, 500);
+        };
+        
+        reader.readAsDataURL(file);
     }
 </script>
 {% endblock %}

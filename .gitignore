@@ -7,3 +7,4 @@
 # ignore Django settings files
 /blog/settings.py
 **/settings.py
+blog/db.sqlite3

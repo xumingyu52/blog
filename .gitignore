@@ -1,0 +1,11 @@
+# ignore SQLite database file
+/db.sqlite3
+
+# ignore uploaded media files
+/media/
+
+# ignore Django settings files
+/blog/settings.py
+**/settings.py
+blog/db.sqlite3
+blog/blog/settings.py

@@ -129,7 +129,9 @@ def edit_post(request, post_id):
             messages.success(request, '帖子编辑成功！')
             return redirect('blog_context:post', post_id=post_id)  # 保存后跳转
 
-    return render(request, 'blog_context/edit_post.html', {
+    template = 'blog_context/mobile/edit_post_mobile.html' if is_mobile(request) else 'blog_context/edit_post.html'
+
+    return render(request, template_name=template, context= {
         'title_form': title_form,
         'context_form': context_form,
         'post_id': post_id

@@ -1,7 +1,7 @@
 {% extends "blog_context/mobile/base_mobile.html" %}
 {% load static %}
 
-{% block title %}发布新内容 - 手机端{% endblock %}
+{% block title %}编辑帖子 - 手机端{% endblock %}
 
 {% block m_css %}
 <link rel="stylesheet" href="{% static 'images/css/quill.snow.css' %}">
@@ -9,7 +9,7 @@
     .m-new-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; }
     .m-form-item { margin-bottom: 24px; }
     .m-form-label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px; }
-    
+
     /* Quill 优化 */
     #editor-container {
         height: auto;
@@ -38,7 +38,7 @@
         max-width: 100%;
         border-radius: 8px;
     }
-    
+
     .m-submit-area {
         margin-top: 30px;
         padding-bottom: 20px;
@@ -47,7 +47,7 @@
 {% endblock %}
 
 {% block content %}
-<h1 class="m-new-title">分享新鲜事</h1>
+<h1 class="m-new-title">编辑帖子</h1>
 
 <form method="post" enctype="multipart/form-data" id="post-form">
     {% csrf_token %}
@@ -55,7 +55,7 @@
         <label class="m-form-label">标题</label>
         {{ title_form.text }}
     </div>
-    
+
     <div class="m-form-item">
         <label class="m-form-label">正文内容</label>
         <div id="toolbar-container">
@@ -73,7 +73,7 @@
             </span>
         </div>
         <div id="editor-container"></div>
-        <div style="display:none;">
+        <div style="display:none !important;position: absolute;left: -9999px;top: -9999px;">
             {{ context_form.text }}
         </div>
     </div>
@@ -123,6 +123,14 @@
     // 禁用自带 required 弹出，通过 JS 同步内容
     const hiddenTextarea = document.querySelector('textarea[name="context-text"]');
     if(hiddenTextarea) hiddenTextarea.removeAttribute("required");
+
+    // ===================== 新增：编辑页面内容回显（解决编辑器空白问题） =====================
+    window.addEventListener('load', function() {
+        // 如果隐藏域有内容（编辑旧帖子），自动加载到富文本编辑器
+        if (hiddenTextarea && hiddenTextarea.value.trim()) {
+            quill.root.innerHTML = hiddenTextarea.value;
+        }
+    });
 
     document.getElementById("post-form").onsubmit = function () {
         if (hiddenTextarea) {

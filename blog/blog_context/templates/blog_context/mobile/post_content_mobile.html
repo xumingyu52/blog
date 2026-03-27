@@ -41,7 +41,18 @@
         font-weight: 800;
         flex-shrink: 0;
     }
-    .m-post-meta-date { font-size: 12px; color: var(--m-muted); }
+    .m-post-meta-date { font-size: 12px; 
+                        color: var(--m-muted); 
+                        width: 100%;
+                        display: flex;
+                        justify-content: space-between;
+                    }
+
+    .m-user-post-edit {
+        color: #4a90e2;
+        text-decoration: none;
+        font-weight: 600;
+    }
     .m-post-author-name { font-size: 14px; font-weight: 800; }
     
     /* Body content */
@@ -342,7 +353,8 @@
     <br>
     
     <div class="m-post-author-row">
-        <a href="{% url 'accounts:user_profile' post.author.id %}" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit;">
+        {# Avatar section #}
+        <a href="{% url 'accounts:user_profile' post.author.id %}" style="display: block; flex-shrink: 0;">
             {% if post.author.avatar and post.author.avatar.name != 'avatars/default.png' %}
             <img src="{{ post.author.avatar.url }}" alt="" class="m-post-av">
             {% else %}
@@ -350,11 +362,20 @@
                 {{ post.author.get_initial }}
             </div>
             {% endif %}
-            <div>
-                <div class="m-post-author-name">{{ post.author.username }}</div>
-                <div class="m-post-meta-date">{{ post.date_added|date:"Y-m-d H:i" }}</div>
-            </div>
         </a>
+
+        {# Author and Meta section #}
+        <div style="flex: 1; min-width: 0;">
+            <a href="{% url 'accounts:user_profile' post.author.id %}" style="text-decoration: none; color: inherit; display: block; margin-bottom: 2px;">
+                <div class="m-post-author-name">{{ post.author.username }}</div>
+            </a>
+            <div class="m-post-meta-date">
+                <span>{{ post.date_added|date:"Y-m-d H:i" }}</span>
+                {% if user == post.author %}
+                <a href="{% url 'blog_context:edit_post' post.id %}" class="m-user-post-edit">编辑</a>
+                {% endif %}
+            </div>
+        </div>
     </div>
     
     <div class="m-post-body">

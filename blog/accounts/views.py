@@ -17,7 +17,9 @@ def register(request):
             return redirect('blog_context:posts')
     else:
         form = CustomUserCreationForm()
-    return render(request, 'accounts/register.html', context={'form': form})
+    
+    template = 'accounts/mobile/register_mobile.html' if is_mobile(request) else 'accounts/register.html'
+    return render(request, template, context={'form': form})
 
 def user_login(request):
     if request.user.is_authenticated:

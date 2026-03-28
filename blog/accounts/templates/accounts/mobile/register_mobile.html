@@ -1,0 +1,107 @@
+
+{% extends 'blog_context/mobile/base_mobile.html' %}
+{% load static %}
+
+{% block title %}注册 - 手机端{% endblock %}
+
+{% block m_css %}
+<style>
+    .m-container h2{
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+    .input-group {
+        position: relative;
+        margin: 10px 0;
+    }
+    .input-group p {
+        margin: 0;
+        color: #000000bb;
+    }
+    .input-group input {
+        width: 100%;
+        padding: 12px 8px;
+        font-size: 14px;
+        border-radius: 8px;
+        border: 2px solid #ccc;
+    }
+    .input-group input:focus {
+        outline: none;
+        border-color: #000;
+    }
+    .form-actions {
+        margin-top: 20px;
+    }
+    .form-actions button {
+        width: 100%;
+        color: white;
+        padding: 12px 8px;
+        font-size: 14px;
+        border-radius: 8px;
+        border: 2px solid #ccc;
+        background-color: #000;
+    }
+    .form-actions button:focus {
+        outline: none;
+        border-color: #000;
+    }
+    .btn-skip {
+        display: block;
+        margin-top: 10px;
+        text-align: center;
+    }
+    .btn-skip span {
+        font-size: 14px;
+        color: #000;
+    }
+    .auth-footer {
+        margin-top: 20px;
+        align-items: center;
+    }
+    .auth-footer p {
+        margin: 0;
+        text-align: center;
+    }
+    .auth-footer a {
+        color: #443feb;
+    }
+    
+
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="m-container">
+        <h2>注册</h2>
+        <form method="post" action="{% url 'accounts:register' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div class="input-group">
+
+                    <p><label for="{{ field.id_for_label }}">{{ field.label }}</label></p>
+                    {{ field }}
+
+                    {% if field.errors %}
+                        <div style="color: red; margin-top:5px;">{{ field.errors.0 }}</div>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <div style="color: #999; margin-top:5px; font-size:12px;">{{ field.help_text|safe }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit">注册</button>
+                <a href="{% url 'blog_context:posts' %}" class="btn-skip">
+                    <span style="opacity: 0.6;">直接进入论坛</span>
+                </a>
+            </div>
+        </form>
+
+        <div class="auth-footer" style="margin-top:20px;">
+            <p>如果您已拥有账户, <a href="{% url 'accounts:login' %}">请点此登录</a></p>
+        </div>
+    </div>
+{% endblock %}

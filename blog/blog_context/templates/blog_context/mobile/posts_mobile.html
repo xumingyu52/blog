@@ -9,7 +9,7 @@
     .m-page-header {
         padding: 16px 0 12px;
         border-bottom: 1px solid #f0f0f0;
-        margin-bottom: 16px;
+        margin-bottom: 0px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -109,7 +109,6 @@
     <h1 class="m-page-title">全部帖子</h1>
     <span class="m-count-badge">{{ posts|length }} 条</span>
 </div>
-<br>
 <div class="m-post-list" style="padding-bottom: 80px;">
     {% for post in posts %}
     <a href="{% url 'blog_context:post' post.id %}" class="m-post-card">
